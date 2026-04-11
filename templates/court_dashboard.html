@@ -9,54 +9,67 @@
         :root {
             --nba-blue: #1D428A;
             --nba-red: #C8102E;
-            --dark-bg: #000000;
-            --card-bg: #111111;
-            --accent: #FFD700;
+            --nba-gold: #FFD700;
+            --dark-bg: #050505;
+            --card-bg: rgba(20, 20, 20, 0.7);
+            --accent: var(--nba-gold);
             --biz-green: #00FF41;
             --text-main: #FFFFFF;
-            --text-dim: #888888;
+            --text-dim: #A0A0A0;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        html, body {
             background-color: var(--dark-bg);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
-            padding-bottom: 80px; /* Space for bottom nav */
-            overflow-x: hidden;
+            height: 100%;
+            overflow: hidden; /* App feel, handle scroll in views */
+        }
+
+        /* Layout Container for Desktop Centering */
+        .app-container {
+            max-width: 450px;
+            margin: 0 auto;
+            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
         }
 
         /* Top Header */
         .app-header {
-            background: #000;
-            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 20px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #222;
-            position: sticky;
-            top: 0;
+            border-bottom: 1px solid var(--glass-border);
             z-index: 100;
         }
         .app-logo {
             font-family: 'Oswald', sans-serif;
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            font-weight: 700;
         }
         .app-logo span { color: var(--accent); }
 
         /* Navigation */
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: #0a0a0a;
-            border-top: 1px solid #222;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
             display: flex;
             justify-content: space-around;
-            padding: 12px 0;
+            padding: 15px 0 35px; /* Extra bottom for safe area */
             z-index: 1000;
         }
         .nav-item {
@@ -64,180 +77,228 @@
             flex-direction: column;
             align-items: center;
             color: var(--text-dim);
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-weight: 700;
             text-transform: uppercase;
             text-decoration: none;
+            transition: color 0.2s, transform 0.2s;
         }
-        .nav-item.active { color: var(--accent); }
-        .nav-icon { font-size: 1.2rem; margin-bottom: 4px; }
+        .nav-item.active { color: var(--accent); transform: translateY(-2px); }
+        .nav-icon { font-size: 1.4rem; margin-bottom: 5px; }
 
-        /* Sections */
-        .view-section { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        /* Scrollable Content Area */
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Views */
+        .view-section { display: none; padding: 25px; animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Cards */
-        .court-hero {
-            background: linear-gradient(135deg, #1a1a1a 0%, #000 100%);
-            border-radius: 16px;
-            padding: 20px;
-            border: 1px solid #222;
-            margin-bottom: 20px;
+        /* Springboard Dashboard */
+        .springboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .tile {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 25px 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.2s;
             position: relative;
             overflow: hidden;
+            cursor: pointer;
+        }
+        .tile:active { transform: scale(0.95); background: rgba(255, 215, 0, 0.1); }
+        .tile::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at top right, var(--nba-gold) 0%, transparent 70%);
+            opacity: 0.05;
+        }
+        .tile-icon { font-size: 2.2rem; margin-bottom: 12px; filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3)); }
+        .tile-label { font-family: 'Oswald', sans-serif; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Specialized Cards */
+        .court-hero {
+            background: linear-gradient(145deg, #111 0%, #000 100%);
+            border-radius: 24px;
+            padding: 25px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 25px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .court-hero::before {
+            content: ''; position: absolute; top: -1px; left: -1px; right: -1px; bottom: -1px;
+            border-radius: 24px; background: linear-gradient(45deg, transparent, var(--glass-border), transparent);
+            z-index: -1;
         }
         .vibe-tag {
-            position: absolute;
-            top: 15px; right: 15px;
-            background: var(--nba-red);
-            font-size: 0.6rem;
-            font-weight: 900;
-            padding: 4px 8px;
-            border-radius: 4px;
-            text-transform: uppercase;
+            position: absolute; top: 20px; right: 20px;
+            background: var(--nba-red); font-size: 0.6rem; font-weight: 900;
+            padding: 5px 10px; border-radius: 6px; text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(200, 16, 46, 0.3);
         }
         .badge {
-            font-size: 0.6rem;
-            padding: 3px 6px;
-            border-radius: 3px;
-            background: #333;
-            color: #eee;
-            margin-right: 5px;
-            text-transform: uppercase;
-            font-weight: 800;
+            font-size: 0.6rem; padding: 4px 8px; border-radius: 4px;
+            background: rgba(255,255,255,0.1); color: #fff; margin-right: 6px;
+            text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;
         }
         .badge-partner { background: var(--biz-green); color: black; }
         .badge-king { background: var(--accent); color: black; }
-        .court-title { font-family: 'Oswald', sans-serif; font-size: 1.8rem; margin: 0; margin-top: 10px; line-height: 1; }
-        .court-loc { color: var(--text-dim); font-size: 0.8rem; margin-top: 5px; }
+        .court-title { font-family: 'Oswald', sans-serif; font-size: 2.2rem; margin: 0; margin-top: 15px; line-height: 1; letter-spacing: -1px; }
+        .court-loc { color: var(--text-dim); font-size: 0.85rem; margin-top: 8px; font-weight: 500; }
 
         /* Stats Pill Row */
-        .stats-row { display: flex; gap: 10px; margin-top: 20px; }
+        .stats-row { display: flex; gap: 12px; margin-top: 25px; }
         .pill {
-            background: #222;
-            padding: 10px;
-            border-radius: 12px;
-            flex: 1;
-            text-align: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            padding: 12px; border-radius: 16px; flex: 1; text-align: center;
         }
-        .pill-val { display: block; font-weight: 900; font-size: 1rem; color: var(--accent); }
-        .pill-lbl { font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase; margin-top: 2px; }
+        .pill-val { display: block; font-weight: 900; font-size: 1.1rem; color: var(--accent); font-family: 'Oswald', sans-serif; }
+        .pill-lbl { font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase; margin-top: 4px; font-weight: 700; }
 
         /* Action Buttons */
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; }
         .btn {
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            font-weight: 800;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: transform 0.1s;
+            border: none; padding: 18px; border-radius: 14px;
+            font-weight: 900; font-size: 0.85rem; text-transform: uppercase;
+            cursor: pointer; transition: all 0.2s; letter-spacing: 1px;
+            font-family: 'Oswald', sans-serif;
         }
-        .btn:active { transform: scale(0.95); }
-        .btn-primary { background: white; color: black; }
+        .btn-primary { background: #fff; color: #000; box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
         .btn-outline { background: transparent; border: 1px solid #333; color: white; }
+        .btn:active { transform: scale(0.96); opacity: 0.8; }
 
         /* Search List */
         .search-bar {
-            background: #111;
-            border: 1px solid #222;
-            padding: 12px 15px;
-            border-radius: 12px;
-            width: 100%;
-            color: white;
-            margin-bottom: 20px;
-            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 16px 20px; border-radius: 16px; width: 100%; color: white;
+            margin-bottom: 25px; font-size: 1rem; transition: border-color 0.3s;
         }
+        .search-bar:focus { border-color: var(--accent); }
         .list-item {
-            background: #0a0a0a;
-            border: 1px solid #1a1a1a;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: rgba(15, 15, 15, 0.5); border: 1px solid var(--glass-border);
+            padding: 18px; border-radius: 18px; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: transform 0.2s;
         }
-        .list-name { font-weight: 700; font-size: 0.95rem; }
-        .list-sub { font-size: 0.7rem; color: var(--text-dim); margin-top: 3px; }
+        .list-item:active { transform: scale(0.98); background: rgba(255, 255, 255, 0.05); }
+        .list-name { font-weight: 700; font-size: 1rem; color: #eee; }
+        .list-sub { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
 
         /* Profile Card */
         .hooper-card {
-            background: var(--nba-blue);
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            border: 2px solid rgba(255,255,255,0.1);
-            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--nba-blue) 0%, #050505 100%);
+            border-radius: 28px; padding: 35px 25px; text-align: center;
+            border: 1px solid rgba(255,255,255,0.1); margin-bottom: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
         }
         .archetype {
-            background: var(--accent);
-            color: black;
-            padding: 2px 10px;
-            border-radius: 10px;
-            font-size: 0.6rem;
-            font-weight: 900;
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-
-        /* Sentient Voice */
-        .sentient-bubble {
-            background: #1a1a1a;
-            border-left: 3px solid var(--accent);
-            padding: 15px;
-            border-radius: 0 12px 12px 0;
-            margin-bottom: 20px;
-            font-style: italic;
-            font-size: 0.9rem;
-            color: #ddd;
+            background: var(--accent); color: black; padding: 4px 12px;
+            border-radius: 12px; font-size: 0.65rem; font-weight: 900;
+            display: inline-block; margin-bottom: 15px; text-transform: uppercase;
         }
 
         /* Ticker */
         .broadcast-ticker {
-            background: var(--nba-blue);
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 800;
-            padding: 5px 0;
-            white-space: nowrap;
-            overflow: hidden;
+            background: linear-gradient(90deg, var(--nba-blue), #000);
+            color: white; font-size: 0.7rem; font-weight: 800; padding: 8px 0;
+            display: flex; overflow: hidden; border-top: 1px solid rgba(255,255,255,0.1);
         }
-        .ticker-move { display: inline-block; animation: scrollText 20s linear infinite; }
-        @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+        .ticker-move { display: inline-block; animation: scrollText 25s linear infinite; padding-left: 100%; }
+        @keyframes scrollText { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+
+        /* Live Pulse */
+        .pulse-dot {
+            width: 8px; height: 8px; background: var(--nba-red);
+            border-radius: 50%; display: inline-block; margin-right: 6px;
+            animation: pulse-red 1.5s infinite;
+        }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(200, 16, 46, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(200, 16, 46, 0); } 100% { box-shadow: 0 0 0 0 rgba(200, 16, 46, 0); } }
+    </style>
     </style>
 </head>
 <body>
 
-    <div class="app-header">
-        <div class="app-logo">COURT SENTINEL <span>OS</span></div>
-        <div style="font-size: 0.8rem; font-weight: 800; color: var(--nba-red);">LIVE</div>
-    </div>
-
-    <!-- Discover View -->
-    <div id="view-discover" class="view-section active">
-        <input type="text" class="search-bar" placeholder="Find a court in NYC/LI..." onkeyup="handleSearch(event)">
-        <div id="search-results">
-            <!-- Simulated Recent/Nearby Courts -->
-            <div class="list-item" onclick="selectCourt('NYC_West_4th', 'West 4th St', 'Manhattan')">
-                <div>
-                    <div class="list-name">West 4th St "The Cage"</div>
-                    <div class="list-sub">Manhattan • 14 Checked In</div>
-                </div>
-                <div style="color:var(--accent); font-weight:900;">LIVE</div>
-            </div>
-            <div class="list-item" onclick="selectCourt('LI_Manor', 'Manor Field Park', 'Huntington')">
-                <div>
-                    <div class="list-name">Manor Field Park</div>
-                    <div class="list-sub">Huntington • Heavy Run</div>
-                </div>
-                <div style="color:var(--biz-green); font-weight:900;">OPEN</div>
+    <div class="app-container">
+        <div class="app-header">
+            <div class="app-logo">COURT SENTINEL <span>OS</span></div>
+            <div style="font-size: 0.75rem; font-weight: 800; color: var(--nba-red); display: flex; align-items: center;">
+                <span class="pulse-dot"></span> LIVE
             </div>
         </div>
-    </div>
+
+        <div class="app-content">
+            <!-- Home / Springboard View -->
+            <div id="view-home" class="view-section active">
+                <div class="sentient-bubble" id="home-voice">
+                    "The world is your court. 42 runs active worldwide. Where are you claiming your legacy today?"
+                </div>
+                
+                <div class="springboard">
+                    <div class="tile" onclick="showView('discover')">
+                        <div class="tile-icon">🔍</div>
+                        <div class="tile-label">Global Runs</div>
+                    </div>
+                    <div class="tile" onclick="showView('leaderboard')">
+                        <div class="tile-icon">🏆</div>
+                        <div class="tile-label">Leaderboard</div>
+                    </div>
+                    <div class="tile" onclick="showView('profile')">
+                        <div class="tile-icon">🏀</div>
+                        <div class="tile-label">My Bio</div>
+                    </div>
+                    <div class="tile" onclick="triggerAudit()">
+                        <div class="tile-icon">🛰️</div>
+                        <div class="tile-label">Vibe Check</div>
+                    </div>
+                    <div class="tile" onclick="alert('Squad management coming soon.')">
+                        <div class="tile-icon">👥</div>
+                        <div class="tile-label">Squads</div>
+                    </div>
+                    <div class="tile" onclick="alert('Settings and Asphalt ID coming soon.')">
+                        <div class="tile-icon">⚙️</div>
+                        <div class="tile-label">Settings</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discover View -->
+            <div id="view-discover" class="view-section">
+                <input type="text" class="search-bar" placeholder="Find a court anywhere..." onkeyup="handleSearch(event)">
+                <div id="search-results">
+                    <!-- Simulated Recent/Nearby Courts -->
+                    <div class="list-item" onclick="selectCourt('NYC_West_4th', 'West 4th St', 'Manhattan')">
+                        <div>
+                            <div class="list-name">West 4th St "The Cage"</div>
+                            <div class="list-sub">New York • 14 Checked In</div>
+                        </div>
+                        <div style="color:var(--accent); font-weight:900;">LIVE</div>
+                    </div>
+                    <div class="list-item" onclick="selectCourt('LI_Manor', 'Manor Field Park', 'Huntington')">
+                        <div>
+                            <div class="list-name">Manor Field Park</div>
+                            <div class="list-sub">Huntington • Heavy Run</div>
+                        </div>
+                        <div style="color:var(--biz-green); font-weight:900;">OPEN</div>
+                    </div>
+                </div>
+            </div>
 
     <!-- Court Detail View (Drill down) -->
     <div id="view-court-detail" class="view-section">
@@ -265,9 +326,34 @@
             </div>
         </div>
 
-        <div class="sentient-bubble" id="det-voice">
-            "I'm breathing heavy right now. 12 guys on the baseline, the run is elite. Bring your A-game."
+        </div> <!-- End app-content -->
+
+        <div class="broadcast-ticker">
+            <div class="ticker-move">
+                GLOBAL RUNS ACTIVE • WORLDWIDE LEADERBOARD UPDATED • TEAM PEGGS ON A 4W STREAK • NEW COURTS ADDED IN CHICAGO AND LA • JOIN THE SQUAD • 
+            </div>
         </div>
+
+        <!-- Bottom Nav -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active" id="nav-home" onclick="showView('home')">
+                <span class="nav-icon">🏠</span>
+                Home
+            </a>
+            <a href="#" class="nav-item" id="nav-discover" onclick="showView('discover')">
+                <span class="nav-icon">🔍</span>
+                Explore
+            </a>
+            <a href="#" class="nav-item" id="nav-rank" onclick="showView('leaderboard')">
+                <span class="nav-icon">🏆</span>
+                Rankings
+            </a>
+            <a href="#" class="nav-item" id="nav-profile" onclick="showView('profile')">
+                <span class="nav-icon">🏀</span>
+                Bio
+            </a>
+        </nav>
+    </div> <!-- End app-container -->
 
         <div class="btn-group">
             <button class="btn btn-primary" onclick="joinQueue()">Join Queue</button>
@@ -313,40 +399,28 @@
         </div>
     </div>
 
-    <!-- Bottom Nav -->
-    <nav class="bottom-nav">
-        <a href="#" class="nav-item active" id="nav-discover" onclick="showView('discover')">
-            <span class="nav-icon">🔍</span>
-            Explore
-        </a>
-        <a href="#" class="nav-item" id="nav-rank" onclick="showView('leaderboard')">
-            <span class="nav-icon">🏆</span>
-            Rankings
-        </a>
-        <a href="#" class="nav-item" id="nav-profile" onclick="showView('profile')">
-            <span class="nav-icon">🏀</span>
-            My Bio
-        </a>
-    </nav>
-
-    <div class="broadcast-ticker">
-        <div class="ticker-move">
-            WELCOME TO COURT SENTINEL OS • NYC HACKATHON 2026 • LIVE RUNS AT WEST 4TH • TEAM PEGGS ON A 4W STREAK • MANOR FIELD IS OPEN • 
-        </div>
-    </div>
 
     <script>
-        let currentView = 'discover';
+        let currentView = 'home';
         let activeCourtId = null;
 
         function showView(viewId) {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             
-            document.getElementById('view-' + (viewId === 'court-detail' ? 'court-detail' : viewId)).classList.add('active');
-            if(viewId !== 'court-detail') {
-                document.getElementById('nav-' + viewId).classList.add('active');
+            const targetView = document.getElementById('view-' + (viewId === 'court-detail' ? 'court-detail' : viewId));
+            if (targetView) targetView.classList.add('active');
+            
+            // Handle nav items (some views like court-detail don't have a direct nav item)
+            const navItem = document.getElementById('nav-' + viewId);
+            if (navItem) {
+                navItem.classList.add('active');
+            } else if (viewId === 'court-detail' || viewId === 'home') {
+                // If in detail, keep home or discover active depending on where we came from
+                // For now, just default to home if not matched
+                document.getElementById('nav-home').classList.add('active');
             }
+            
             currentView = viewId;
             
             if(viewId === 'leaderboard') fetchLeaderboard();
@@ -382,9 +456,9 @@
                 <div class="list-item" onclick="selectCourt('${c.id}', '${c.name.replace(/'/g, "\\'")}', '${c.location.replace(/'/g, "\\'")}', '${c.source}', '${c.access_type}')">
                     <div>
                         <div class="list-name">${c.name} ${c.source && c.source.includes('Partner') ? '✅' : ''}</div>
-                        <div class="list-sub">${c.county || 'NYC'} • ${c.access_type || 'Public'}</div>
+                        <div class="list-sub">${c.county || 'GLOBAL'} • ${c.access_type || 'Public'}</div>
                     </div>
-                    <div style="font-size:0.7rem; font-weight:900; opacity:0.5;">GO</div>
+                    <div style="font-size:0.75rem; font-weight:900; color:var(--accent);">GO</div>
                 </div>
             `).join('');
         }
@@ -394,7 +468,7 @@
             const data = await res.json();
             const container = document.getElementById('queue-list');
             if (data.queue.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#444; font-size:0.8rem; margin-top:20px;">No one in queue. Court is wide open.</p>';
+                container.innerHTML = '<p style="text-align:center; color:var(--text-dim); font-size:0.8rem; margin-top:30px;">No one in queue. Court is wide open.</p>';
                 return;
             }
             container.innerHTML = data.queue.map(t => `
@@ -403,7 +477,7 @@
                         <div class="list-name">${t.team_id}</div>
                         <div class="list-sub">Captain: ${t.captain_id}</div>
                     </div>
-                    <div style="font-size:0.6rem; font-weight:900; text-transform:uppercase;">${t.status}</div>
+                    <div style="font-size:0.6rem; font-weight:900; text-transform:uppercase; color: ${t.status === 'playing' ? 'var(--biz-green)' : 'var(--accent)'}">${t.status}</div>
                 </div>
             `).join('');
         }
@@ -425,7 +499,7 @@
         }
 
         function triggerAudit() {
-            alert("AI Vision scanning court... Vibe: Elite. 12 players confirmed.");
+            alert("AI Vision scanning global courts... Vibe: Elite. 42 active runs detected.");
         }
 
         async function fetchLeaderboard() {
@@ -438,13 +512,12 @@
                         <span style="color:var(--accent); font-weight:900; margin-right:10px;">#${idx+1}</span>
                         <span class="list-name">${s.squad_name}</span>
                     </div>
-                    <div style="font-weight:900;">${s.win_streak}W</div>
+                    <div style="font-weight:900; color:var(--accent);">${s.win_streak}W</div>
                 </div>
             `).join('');
         }
 
         async function fetchProfile() {
-            // Simplified for demo
             const container = document.getElementById('chem-list');
             container.innerHTML = `
                 <div class="list-item">
@@ -456,6 +529,11 @@
                 </div>
             `;
         }
+
+        // Initialize Home View
+        document.addEventListener('DOMContentLoaded', () => {
+            showView('home');
+        });
     </script>
 </body>
 </html>

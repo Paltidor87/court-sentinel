@@ -15,6 +15,7 @@ Court Sentinel OS is a multimodal AI-driven platform designed to solve the "beau
 - **AI Vision Scout:** Real-time player counting and "Vibe" assessment using Vertex AI Vision to provide verified occupancy data.
 - **City Rankings:** A gamified win-streak leaderboard that drives long-term community engagement.
 - **B2B Operational Intel:** Integration with NYC 311 data to help city managers prioritize court maintenance and repairs.
+- **Cross-Platform Automation:** Powered by **n8n** for real-time event synchronization and Telegram/Memory triggers.
 
 ## Technologies Used
 - **Google Cloud Platform:** Vertex AI, Cloud Run, Application Default Credentials (ADC).
@@ -22,6 +23,7 @@ Court Sentinel OS is a multimodal AI-driven platform designed to solve the "beau
 - **Data Sources:** NYC Parks & Recreation Open Data, NYC 311 Service Requests.
 - **Backend:** FastAPI (Python), SQLite (Durable Intelligence Vault).
 - **Frontend:** Mobile-first Responsive Dashboard (NBA/Bleacher Report Aesthetic).
+- **n8n:** Workflow automation for cross-platform event synchronization.
 - **Tools:** Firecrawl (for smart facility scraping), MacWhisper (voice ingestion).
 
 ## GitHub Repository

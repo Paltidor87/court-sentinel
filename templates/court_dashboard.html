@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CourtFinder OS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Oswald:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --nba-blue: #1D428A;
+            --nba-red: #C8102E;
+            --dark-bg: #000000;
+            --card-bg: #111111;
+            --accent: #FFD700;
+            --biz-green: #00FF41;
+            --text-main: #FFFFFF;
+            --text-dim: #888888;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            padding-bottom: 80px; /* Space for bottom nav */
+            overflow-x: hidden;
+        }
+
+        /* Top Header */
+        .app-header {
+            background: #000;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #222;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .app-logo {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .app-logo span { color: var(--accent); }
+
+        /* Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #0a0a0a;
+            border-top: 1px solid #222;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            z-index: 1000;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-dim);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+        .nav-item.active { color: var(--accent); }
+        .nav-icon { font-size: 1.2rem; margin-bottom: 4px; }
+
+        /* Sections */
+        .view-section { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cards */
+        .court-hero {
+            background: linear-gradient(135deg, #1a1a1a 0%, #000 100%);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #222;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .vibe-tag {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: var(--nba-red);
+            font-size: 0.6rem;
+            font-weight: 900;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .badge {
+            font-size: 0.6rem;
+            padding: 3px 6px;
+            border-radius: 3px;
+            background: #333;
+            color: #eee;
+            margin-right: 5px;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+        .badge-partner { background: var(--biz-green); color: black; }
+        .badge-king { background: var(--accent); color: black; }
+        .court-title { font-family: 'Oswald', sans-serif; font-size: 1.8rem; margin: 0; margin-top: 10px; line-height: 1; }
+        .court-loc { color: var(--text-dim); font-size: 0.8rem; margin-top: 5px; }
+
+        /* Stats Pill Row */
+        .stats-row { display: flex; gap: 10px; margin-top: 20px; }
+        .pill {
+            background: #222;
+            padding: 10px;
+            border-radius: 12px;
+            flex: 1;
+            text-align: center;
+        }
+        .pill-val { display: block; font-weight: 900; font-size: 1rem; color: var(--accent); }
+        .pill-lbl { font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase; margin-top: 2px; }
+
+        /* Action Buttons */
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .btn {
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn-primary { background: white; color: black; }
+        .btn-outline { background: transparent; border: 1px solid #333; color: white; }
+
+        /* Search List */
+        .search-bar {
+            background: #111;
+            border: 1px solid #222;
+            padding: 12px 15px;
+            border-radius: 12px;
+            width: 100%;
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+        .list-item {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .list-name { font-weight: 700; font-size: 0.95rem; }
+        .list-sub { font-size: 0.7rem; color: var(--text-dim); margin-top: 3px; }
+
+        /* Profile Card */
+        .hooper-card {
+            background: var(--nba-blue);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+        .archetype {
+            background: var(--accent);
+            color: black;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.6rem;
+            font-weight: 900;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        /* Sentient Voice */
+        .sentient-bubble {
+            background: #1a1a1a;
+            border-left: 3px solid var(--accent);
+            padding: 15px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 20px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: #ddd;
+        }
+
+        /* Ticker */
+        .broadcast-ticker {
+            background: var(--nba-blue);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 5px 0;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        .ticker-move { display: inline-block; animation: scrollText 20s linear infinite; }
+        @keyframes scrollText { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+    </style>
+</head>
+<body>
+
+    <div class="app-header">
+        <div class="app-logo">COURTFINDER <span>OS</span></div>
+        <div style="font-size: 0.8rem; font-weight: 800; color: var(--nba-red);">LIVE</div>
+    </div>
+
+    <!-- Discover View -->
+    <div id="view-discover" class="view-section active">
+        <input type="text" class="search-bar" placeholder="Find a court in NYC/LI..." onkeyup="handleSearch(event)">
+        <div id="search-results">
+            <!-- Simulated Recent/Nearby Courts -->
+            <div class="list-item" onclick="selectCourt('NYC_West_4th', 'West 4th St', 'Manhattan')">
+                <div>
+                    <div class="list-name">West 4th St "The Cage"</div>
+                    <div class="list-sub">Manhattan • 14 Checked In</div>
+                </div>
+                <div style="color:var(--accent); font-weight:900;">LIVE</div>
+            </div>
+            <div class="list-item" onclick="selectCourt('LI_Manor', 'Manor Field Park', 'Huntington')">
+                <div>
+                    <div class="list-name">Manor Field Park</div>
+                    <div class="list-sub">Huntington • Heavy Run</div>
+                </div>
+                <div style="color:var(--biz-green); font-weight:900;">OPEN</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Court Detail View (Drill down) -->
+    <div id="view-court-detail" class="view-section">
+        <div style="margin-bottom: 15px; color: var(--accent); font-weight: 800; font-size: 0.7rem;" onclick="showView('discover')">← BACK TO EXPLORE</div>
+        
+        <div class="court-hero" id="hero-card">
+            <div class="vibe-tag" id="det-vibe">HEAVY</div>
+            <div id="det-badges" style="margin-bottom: 5px;"></div>
+            <div class="court-title" id="det-name">WEST 4TH ST</div>
+            <div class="court-loc" id="det-loc">Sixth Ave, Manhattan</div>
+            
+            <div class="stats-row">
+                <div class="pill">
+                    <span class="pill-val" id="det-wait">15m</span>
+                    <span class="pill-lbl">Wait</span>
+                </div>
+                <div class="pill">
+                    <span class="pill-val" id="det-count">12</span>
+                    <span class="pill-lbl">Players</span>
+                </div>
+                <div class="pill">
+                    <span class="pill-val">👑</span>
+                    <span class="pill-lbl">Owned</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sentient-bubble" id="det-voice">
+            "I'm breathing heavy right now. 12 guys on the baseline, the run is elite. Bring your A-game."
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="joinQueue()">Join Queue</button>
+            <button class="btn btn-outline" onclick="triggerAudit()">AI Audit</button>
+        </div>
+
+        <h2 style="font-family:'Oswald'; font-size:1.2rem; margin-top:30px; text-transform:uppercase;">Current Queue</h2>
+        <div id="queue-list">
+            <!-- Queue items -->
+        </div>
+    </div>
+
+    <!-- Leaderboard View -->
+    <div id="view-leaderboard" class="view-section">
+        <h2 style="font-family:'Oswald'; font-size:1.5rem; text-transform:uppercase;">City Rankings</h2>
+        <div id="rank-list">
+            <!-- Leaderboard items -->
+        </div>
+    </div>
+
+    <!-- Profile View -->
+    <div id="view-profile" class="view-section">
+        <div class="hooper-card">
+            <div class="archetype">SHARPSHOOTER</div>
+            <h1 style="font-family:'Oswald'; font-size:2.5rem; margin:0;">PEGGS</h1>
+            <p style="font-size:0.7rem; opacity:0.6; margin-top:5px;">ELITE STATUS • WEST 4TH VET</p>
+            
+            <div class="stats-row" style="margin-top:20px;">
+                <div class="pill" style="background:rgba(0,0,0,0.3)">
+                    <span class="pill-val">68%</span>
+                    <span class="pill-lbl">Win Rate</span>
+                </div>
+                <div class="pill" style="background:rgba(0,0,0,0.3)">
+                    <span class="pill-val">42</span>
+                    <span class="pill-lbl">Wins</span>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="font-size:0.7rem; text-transform:uppercase; color:var(--accent);">Teammate Chemistry</h3>
+        <div id="chem-list">
+            <!-- Chemistry items -->
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" id="nav-discover" onclick="showView('discover')">
+            <span class="nav-icon">🔍</span>
+            Explore
+        </a>
+        <a href="#" class="nav-item" id="nav-rank" onclick="showView('leaderboard')">
+            <span class="nav-icon">🏆</span>
+            Rankings
+        </a>
+        <a href="#" class="nav-item" id="nav-profile" onclick="showView('profile')">
+            <span class="nav-icon">🏀</span>
+            My Bio
+        </a>
+    </nav>
+
+    <div class="broadcast-ticker">
+        <div class="ticker-move">
+            WELCOME TO COURTFINDER OS • NYC HACKATHON 2026 • LIVE RUNS AT WEST 4TH • TEAM PEGGS ON A 4W STREAK • MANOR FIELD IS OPEN • 
+        </div>
+    </div>
+
+    <script>
+        let currentView = 'discover';
+        let activeCourtId = null;
+
+        function showView(viewId) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById('view-' + (viewId === 'court-detail' ? 'court-detail' : viewId)).classList.add('active');
+            if(viewId !== 'court-detail') {
+                document.getElementById('nav-' + viewId).classList.add('active');
+            }
+            currentView = viewId;
+            
+            if(viewId === 'leaderboard') fetchLeaderboard();
+            if(viewId === 'profile') fetchProfile();
+        }
+
+        async function selectCourt(id, name, loc, source, accessType) {
+            activeCourtId = id;
+            document.getElementById('det-name').innerText = name.toUpperCase();
+            document.getElementById('det-loc').innerText = loc;
+            
+            // Badges
+            const badgeContainer = document.getElementById('det-badges');
+            badgeContainer.innerHTML = '';
+            if (source && source.includes('Partner')) {
+                badgeContainer.innerHTML += '<span class="badge badge-partner">PRO PARTNER</span>';
+            }
+            if (accessType) {
+                badgeContainer.innerHTML += `<span class="badge">${accessType.toUpperCase()}</span>`;
+            }
+
+            showView('court-detail');
+            fetchQueue(id);
+        }
+
+        async function handleSearch(e) {
+            const q = e.target.value;
+            if (q.length < 2) return;
+            const res = await fetch(`/referee/courts?q=${q}`);
+            const data = await res.json();
+            const container = document.getElementById('search-results');
+            container.innerHTML = data.courts.map(c => `
+                <div class="list-item" onclick="selectCourt('${c.id}', '${c.name.replace(/'/g, "\\'")}', '${c.location.replace(/'/g, "\\'")}', '${c.source}', '${c.access_type}')">
+                    <div>
+                        <div class="list-name">${c.name} ${c.source && c.source.includes('Partner') ? '✅' : ''}</div>
+                        <div class="list-sub">${c.county || 'NYC'} • ${c.access_type || 'Public'}</div>
+                    </div>
+                    <div style="font-size:0.7rem; font-weight:900; opacity:0.5;">GO</div>
+                </div>
+            `).join('');
+        }
+
+        async function fetchQueue(id) {
+            const res = await fetch(`/referee/status/${id}`);
+            const data = await res.json();
+            const container = document.getElementById('queue-list');
+            if (data.queue.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#444; font-size:0.8rem; margin-top:20px;">No one in queue. Court is wide open.</p>';
+                return;
+            }
+            container.innerHTML = data.queue.map(t => `
+                <div class="list-item" style="border-left: 4px solid ${t.status === 'playing' ? 'var(--nba-blue)' : 'var(--accent)'}">
+                    <div>
+                        <div class="list-name">${t.team_id}</div>
+                        <div class="list-sub">Captain: ${t.captain_id}</div>
+                    </div>
+                    <div style="font-size:0.6rem; font-weight:900; text-transform:uppercase;">${t.status}</div>
+                </div>
+            `).join('');
+        }
+
+        async function joinQueue() {
+            const team = prompt("Team Name:", "Squad " + Math.floor(Math.random()*900));
+            if(!team) return;
+            await fetch('/referee/check-in', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    court_id: activeCourtId,
+                    team_id: team,
+                    captain_id: 'peggs',
+                    lat: 0, lon: 0
+                })
+            });
+            fetchQueue(activeCourtId);
+        }
+
+        function triggerAudit() {
+            alert("AI Vision scanning court... Vibe: Elite. 12 players confirmed.");
+        }
+
+        async function fetchLeaderboard() {
+            const res = await fetch('/referee/leaderboard');
+            const data = await res.json();
+            const container = document.getElementById('rank-list');
+            container.innerHTML = data.leaderboard.map((s, idx) => `
+                <div class="list-item">
+                    <div>
+                        <span style="color:var(--accent); font-weight:900; margin-right:10px;">#${idx+1}</span>
+                        <span class="list-name">${s.squad_name}</span>
+                    </div>
+                    <div style="font-weight:900;">${s.win_streak}W</div>
+                </div>
+            `).join('');
+        }
+
+        async function fetchProfile() {
+            // Simplified for demo
+            const container = document.getElementById('chem-list');
+            container.innerHTML = `
+                <div class="list-item">
+                    <div>
+                        <div class="list-name">Naiqui</div>
+                        <div style="font-size:0.6rem; color:var(--accent); font-weight:900;">SPLASH BROTHERS</div>
+                    </div>
+                    <div style="color:var(--biz-green); font-weight:900;">12 WINS</div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

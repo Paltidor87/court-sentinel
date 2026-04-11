@@ -1,13 +1,13 @@
 # NYC Build With AI Hackathon 2026 - Official Submission
 
 ## Project Title
-**Asphalt OS**
+**Court Sentinel OS**
 
 ## Tagline
 The pickup basketball operating system making the asphalt fair, predictable, and worth showing up for.
 
 ## Project Description
-Asphalt OS is a multimodal AI-driven platform designed to solve the "beautiful anarchy" of NYC streetball. We move beyond simple maps by giving the court a voice and a neutral brain. Using Gemini 1.5 Flash on Vertex AI, the system manages real-time "Got Next" queues, audits player presence via vision to prevent "ghosting," and provides B2B operational intelligence for city park management.
+Court Sentinel OS is a multimodal AI-driven platform designed to solve the "beautiful anarchy" of NYC streetball. We move beyond simple maps by giving the court a voice and a neutral brain. Using Gemini 1.5 Flash on Vertex AI, the system manages real-time "Got Next" queues, audits player presence via vision to prevent "ghosting," and provides B2B operational intelligence for city park management.
 
 ### Key Features:
 - **The AI Referee:** A neutral, voice-and-vision enabled agent that manages timestamped queues, preventing "clout" from overriding fairness.

@@ -3623,7 +3623,7 @@ async def clear_session(session_id: str):
 
 @app.get("/court", response_class=HTMLResponse)
 async def court_dashboard():
-    """Serve the NBA-styled Asphalt Live dashboard."""
+    """Serve the NBA-styled Court Sentinel Live dashboard."""
     with open("templates/court_dashboard.html", "r") as f:
         return f.read()
 

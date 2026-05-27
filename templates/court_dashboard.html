@@ -1113,8 +1113,10 @@
             const bar = document.getElementById('mono-progress');
             const pitchBtn = document.getElementById('mono-pitch-btn');
             const buyoutBtn = document.getElementById('mono-buyout-btn');
+            const widget = document.getElementById('monetization-widget');
             
             if (isGym) {
+                widget.style.display = 'block';
                 title.innerText = "GYM DAY PASS & RUN";
                 cost.innerText = "10 Credits 🪙";
                 desc.innerHTML = `✍️ <strong>Waiver:</strong> ${waiverSigned ? 'Signed ✅' : 'Required'}<br>
@@ -1132,15 +1134,7 @@
                 }
                 buyoutBtn.innerText = "Get Day Pass";
             } else {
-                title.innerText = "CROWDFUNDED RUN";
-                cost.innerText = `$${crowdfundAmount} / $50`;
-                desc.innerText = "Pitch in to buyout the court for a private squad run.";
-                bar.style.width = `${(crowdfundAmount / 50) * 100}%`;
-                bar.style.backgroundColor = "var(--biz-green)";
-                pitchBtn.innerText = "Pitch in $5";
-                pitchBtn.style.background = "var(--biz-green)";
-                pitchBtn.style.color = "#000";
-                buyoutBtn.innerText = "Buy Out $50";
+                widget.style.display = 'none';
             }
         }
 

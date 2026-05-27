@@ -15,6 +15,31 @@ log = logging.getLogger("openbot.referee")
 router = APIRouter(prefix="/referee", tags=["referee"])
 DB_PATH = "data/courtfinder/courts.db"
 
+# Ensure Chronicles & Hidden Chemistry tables exist at runtime
+conn = sqlite3.connect(DB_PATH)
+conn.executescript("""
+    CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+        email TEXT PRIMARY KEY,
+        player_id TEXT,
+        subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS blog_posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        author TEXT NOT NULL,
+        tags TEXT,
+        published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS hidden_chemistry (
+        player_id TEXT,
+        teammate_id TEXT,
+        PRIMARY KEY (player_id, teammate_id)
+    );
+""")
+conn.commit()
+conn.close()
+
 # Vertex AI Configuration
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", "gcloud-hackathon-hauvzosacm3d0")
 LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
@@ -57,6 +82,10 @@ class SubscribeRequest(BaseModel):
 class GenerateNewsletterRequest(BaseModel):
     court_id: Optional[str] = None
     player_id: str
+
+class HideChemistryRequest(BaseModel):
+    player_id: str
+    teammate_id: str
 
 def get_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -219,10 +248,13 @@ async def get_player_chemistry(player_id: str, db: sqlite3.Connection = Depends(
         JOIN game_roster r2 ON r1.game_id = r2.game_id
         JOIN players p2 ON r2.player_id = p2.player_id
         WHERE r1.player_id = ? AND r2.player_id != ? AND r1.is_winner = 1 AND r2.is_winner = 1
+          AND r2.player_id NOT IN (
+              SELECT teammate_id FROM hidden_chemistry WHERE player_id = ?
+          )
         GROUP BY r2.player_id
         ORDER BY wins_together DESC
         LIMIT 5
-    """, (player_id, player_id)).fetchall()
+    """, (player_id, player_id, player_id)).fetchall()
     
     results = []
     for r in rows:
@@ -701,5 +733,33 @@ async def generate_newsletter(req: GenerateNewsletterRequest, db: sqlite3.Connec
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/player/chemistry/hide")
+async def hide_player_chemistry(req: HideChemistryRequest, db: sqlite3.Connection = Depends(get_db)):
+    """Hide a teammate from player's chemistry list to give them display control."""
+    try:
+        db.execute("""
+            INSERT OR REPLACE INTO hidden_chemistry (player_id, teammate_id)
+            VALUES (?, ?)
+        """, (req.player_id, req.teammate_id))
+        db.commit()
+        return {"status": "ok", "message": f"Teammate {req.teammate_id} is now hidden."}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/blog/posts/{id}")
+async def delete_blog_post(id: int, db: sqlite3.Connection = Depends(get_db)):
+    """Delete a blog column/story from the Chronicles feed."""
+    try:
+        db.execute("DELETE FROM blog_posts WHERE id = ?", (id,))
+        db.commit()
+        return {"status": "ok", "message": "Chronicles column deleted successfully."}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 

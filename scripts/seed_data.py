@@ -21,6 +21,11 @@ def seed():
             tags TEXT,
             published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+        CREATE TABLE IF NOT EXISTS hidden_chemistry (
+            player_id TEXT,
+            teammate_id TEXT,
+            PRIMARY KEY (player_id, teammate_id)
+        );
     """)
     conn.execute("DELETE FROM squad_rankings")
     conn.execute("DELETE FROM court_kings")
@@ -29,6 +34,10 @@ def seed():
     conn.execute("DELETE FROM legacy_nicknames")
     conn.execute("DELETE FROM newsletter_subscribers")
     conn.execute("DELETE FROM blog_posts")
+    conn.execute("DELETE FROM games")
+    conn.execute("DELETE FROM game_roster")
+    conn.execute("DELETE FROM reviews")
+    conn.execute("DELETE FROM hidden_chemistry")
 
     # 2. Seed Elite Players
     players = [

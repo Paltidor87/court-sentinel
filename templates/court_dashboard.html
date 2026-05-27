@@ -1489,22 +1489,28 @@
             
             if (chemData.top_chemistry && chemData.top_chemistry.length > 0) {
                 container.innerHTML = chemData.top_chemistry.map(c => `
-                    <div class="list-item">
+                    <div class="list-item" style="position: relative; padding-right: 40px;">
                         <div>
                             <div class="list-name">${c.teammate.toUpperCase()}</div>
                             <div style="font-size:0.6rem; color:var(--accent); font-weight:800; letter-spacing:0.5px; text-transform:uppercase;">${c.nickname || 'TEAMCHEM'}</div>
                         </div>
-                        <div style="color:var(--biz-green); font-weight:700; font-family:'Oswald';">${c.wins_together} WINS</div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="color:var(--biz-green); font-weight:700; font-family:'Oswald';">${c.wins_together} WINS</div>
+                            <button onclick="hideTeammate('${c.teammate}')" style="background: none; border: none; color: var(--nba-red); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; font-weight: bold; line-height: 1;" title="Hide Teammate">×</button>
+                        </div>
                     </div>
                 `).join('');
             } else {
                 container.innerHTML = `
-                    <div class="list-item">
+                    <div class="list-item" style="position: relative; padding-right: 40px;">
                         <div>
                             <div class="list-name">TONY</div>
                             <div style="font-size:0.6rem; color:var(--accent); font-weight:800; letter-spacing:0.5px; text-transform:uppercase;">TWIN TELEPATHS</div>
                         </div>
-                        <div style="color:var(--biz-green); font-weight:700; font-family:'Oswald';">14 WINS</div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="color:var(--biz-green); font-weight:700; font-family:'Oswald';">14 WINS</div>
+                            <button onclick="hideTeammate('tony')" style="background: none; border: none; color: var(--nba-red); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; font-weight: bold; line-height: 1;" title="Hide Teammate">×</button>
+                        </div>
                     </div>
                 `;
             }
@@ -1581,7 +1587,10 @@
                         <div class="chronicles-card">
                             <div class="chronicles-card-header">
                                 <span class="chronicles-author">${p.author.toUpperCase()}</span>
-                                <span class="chronicles-date">${dateStr}</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="chronicles-date">${dateStr}</span>
+                                    <button onclick="deleteBlogPost(${p.id})" style="background: none; border: none; color: var(--nba-red); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 2px;" title="Delete Post">🗑️</button>
+                                </div>
                             </div>
                             <div class="chronicles-title">${p.title}</div>
                             <div class="chronicles-tags">${tagsHtml}</div>
@@ -1660,6 +1669,45 @@
             } finally {
                 loading.style.display = 'none';
                 feed.style.opacity = '1';
+            }
+        }
+
+        async function hideTeammate(teammateId) {
+            if (!confirm(`Are you sure you want to hide chemistry stats with ${teammateId.toUpperCase()}?`)) return;
+            try {
+                const res = await fetch('/referee/player/chemistry/hide', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        player_id: 'peggs',
+                        teammate_id: teammateId
+                    })
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    await fetchProfile();
+                } else {
+                    alert("Failed to hide teammate.");
+                }
+            } catch (err) {
+                console.error("Failed to hide teammate:", err);
+            }
+        }
+
+        async function deleteBlogPost(postId) {
+            if (!confirm("Are you sure you want to delete this Chronicles column?")) return;
+            try {
+                const res = await fetch(`/referee/blog/posts/${postId}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    await fetchChronicles();
+                } else {
+                    alert("Failed to delete post.");
+                }
+            } catch (err) {
+                console.error("Failed to delete post:", err);
             }
         }
 

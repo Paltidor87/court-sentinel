@@ -33,7 +33,7 @@ def seed():
     # 2. Seed Elite Players
     players = [
         ("peggs", "PEGGS", "Bucket Getter", 0.74, 50, 37, "Elite"),
-        ("naiqui", "NAIQUI", "3-and-D Wing", 0.72, 48, 35, "Elite"),
+        ("tony", "TONY", "3-and-D Wing", 0.72, 48, 35, "Elite"),
         ("jordan_b", "Flight", "Iso Scorer", 0.65, 30, 20, "Verified"),
         ("big_smooth", "Big Smooth", "Stretch Big", 0.80, 25, 20, "Elite"),
         ("d-train", "D-Train", "Point God", 0.60, 40, 24, "Verified")
@@ -44,7 +44,7 @@ def seed():
     # 2.5 Seed Player Stats (Queried by stats endpoint)
     player_stats_seeds = [
         ("peggs", "PEGGS", 37, 50, "West 4th St (The Cage)", "A lethal bucket getter from deep. Known for silencing the crowd at the West 4th runs.", "Bucket Getter"),
-        ("naiqui", "NAIQUI", 35, 48, "West 4th St (The Cage)", "A lock-down defender and reliable corner shooter.", "3-and-D Wing"),
+        ("tony", "TONY", 35, 48, "West 4th St (The Cage)", "A lock-down defender and reliable corner shooter.", "3-and-D Wing"),
         ("jordan_b", "Flight", 20, 30, "Manor Field Park", "A spectacular isolation threat with explosive bounce.", "Iso Scorer"),
         ("big_smooth", "Big Smooth", 20, 25, "Brooklyn Bridge Park", "A towering stretch big who protects the paint and steps out to hit the trail three.", "Stretch Big"),
         ("d-train", "D-Train", 24, 40, "Astoria Park", "A floor general who commands the offense and delivers perfect dimes.", "Point God")
@@ -74,7 +74,7 @@ def seed():
 
     # 5. Seed Legacy Nicknames
     nicknames = [
-        ("naiqui,peggs", "Twin Telepaths", 14),
+        ("peggs,tony", "Twin Telepaths", 14),
         ("big_smooth,d-train", "Pick & Roll Wizards", 8)
     ]
     for n in nicknames:

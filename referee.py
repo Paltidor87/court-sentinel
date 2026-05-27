@@ -491,17 +491,17 @@ async def get_studio_commentary(court_id: Optional[str] = None, db: sqlite3.Conn
             
     prompt = f"""
     You are the Inside the NBA host desk crew: Ernie Johnson (E.J.), Charles Barkley (Chuck), Shaquille O'Neal (Shaq), and Kenny "The Jet" Smith.
-    Write a brief, hilarious, and high-energy 4-line transcript discussing a pickup basketball court run.
+    Write a brief, hilarious, and high-energy 4-line transcript discussing a pickup basketball court run during its peak hours.
     
     Court details:
     - Court Name: {court_name}
     - Court Vibe: {vibe}
     - Players checked in: {player_count}
-    - Wait time to play: {wait_time}
+    - Wait time to play: {wait_time} (Current peak hour crowd)
     
     Host personalities:
     - Ernie: Sets the stage professionally as the anchor.
-    - Chuck: Criticizes the players/run, uses phrases like "turrible" or guarantees a blowout.
+    - Chuck: Criticizes the players/run, complains about waiting in line (e.g. "I wouldn't wait {wait_time} for a run if they had free donuts"), says it's "turrible".
     - Shaq: Talks about dominance, rings ("four rings, Chuck"), or calls the run "barbecue chicken."
     - Kenny: Talks strategic spacing, running the floor, or going to the board.
     
@@ -516,10 +516,10 @@ async def get_studio_commentary(court_id: Optional[str] = None, db: sqlite3.Conn
     
     # Fallback default script if AI fails or if API key is not configured
     fallback = [
-        {"host": "Ernie", "text": f"Welcome back to Inside the NBA. We're looking at the run over at {court_name}. Looks like a {vibe} with {player_count} players checked in."},
-        {"host": "Kenny", "text": "Look at the transition, Ernie! If you don't run the floor, you're not getting on the board. Spacing is key here!"},
-        {"host": "Chuck", "text": "Kenny, that's just turrible. I guarantee you those guys couldn't score on my grandmother. That's a guarantee!"},
-        {"host": "Shaq", "text": "Chuck, you know nothing about scoring. That run is barbecue chicken for anybody who knows how to dominate. Count the rings!"}
+        {"host": "Ernie", "text": f"Welcome back to Inside the NBA. We're looking at the peak run over at {court_name} with a {wait_time} wait time."},
+        {"host": "Kenny", "text": f"That's because of the spacing, Ernie! Everyone wants to play on a court where people run the floor properly. But with a {wait_time} wait, you gotta be ready!"},
+        {"host": "Chuck", "text": f"Ernie, that is just turrible. I wouldn't wait {wait_time} to play basketball if they were giving out free Krispy Kreme donuts on the sideline. That's a guarantee!"},
+        {"host": "Shaq", "text": f"Chuck, that's because you don't have the stamina to wait. For a dominant big man like me, a {wait_time} wait is just extra time to eat barbecue chicken. Go count the rings!"}
     ]
     
     # If the API key is not configured or is the default, return fallback instantly

@@ -50,6 +50,14 @@ class ReviewRecord(BaseModel):
     rating: int
     trait: str
 
+class SubscribeRequest(BaseModel):
+    email: str
+    player_id: str
+
+class GenerateNewsletterRequest(BaseModel):
+    court_id: Optional[str] = None
+    player_id: str
+
 def get_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -390,7 +398,7 @@ async def vision_scout(req: AuditRequest):
         image_bytes = base64.b64decode(req.photo_b64)
         
         response = client.models.generate_content(
-            model="gemini-1.5-flash-002",
+            model="gemini-2.5-flash",
             contents=[
                 types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
                 types.Part.from_text(text=prompt)
@@ -522,14 +530,9 @@ async def get_studio_commentary(court_id: Optional[str] = None, db: sqlite3.Conn
         {"host": "Shaq", "text": f"Chuck, that's because you don't have the stamina to wait. For a dominant big man like me, a {wait_time} wait is just extra time to eat barbecue chicken. Go count the rings!"}
     ]
     
-    # If the API key is not configured or is the default, return fallback instantly
-    gemini_key = os.getenv("GEMINI_API_KEY", "your_key_here")
-    if gemini_key == "your_key_here":
-        return {"commentary": fallback}
-        
     try:
         response = client.models.generate_content(
-            model="gemini-1.5-flash-002",
+            model="gemini-2.5-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -541,4 +544,162 @@ async def get_studio_commentary(court_id: Optional[str] = None, db: sqlite3.Conn
     except Exception as e:
         log.error("Failed to generate studio commentary: %s", e)
         return {"commentary": fallback}
+
+
+@router.post("/newsletter/subscribe")
+async def subscribe_newsletter(req: SubscribeRequest, db: sqlite3.Connection = Depends(get_db)):
+    """Subscribe a player to the newsletter and reward credits."""
+    try:
+        db.execute("""
+            INSERT OR REPLACE INTO newsletter_subscribers (email, player_id)
+            VALUES (?, ?)
+        """, (req.email, req.player_id))
+        
+        # Reward the player 5 credits for subscribing
+        db.execute("""
+            UPDATE player_stats 
+            SET credits = credits + 5 
+            WHERE player_id = ?
+        """, (req.player_id,))
+        
+        # Get updated credits
+        row = db.execute("SELECT credits FROM player_stats WHERE player_id = ?", (req.player_id,)).fetchone()
+        updated_credits = row["credits"] if row else 35
+        
+        db.execute("INSERT INTO queue_events (team_id, event_type, details) VALUES (?, 'SUBSCRIBE', ?)", 
+                   (req.player_id, f"Subscribed {req.email} to Sentinel Chronicles"))
+        db.commit()
+        
+        return {
+            "status": "ok", 
+            "message": f"Successfully locked in subscription for {req.email}! +5 Sentinel Credits rewarded.",
+            "credits": updated_credits
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/blog/posts")
+async def list_blog_posts(db: sqlite3.Connection = Depends(get_db)):
+    """Retrieve all blog columns ordered by newest first."""
+    rows = db.execute("""
+        SELECT id, title, content, author, tags, published_at 
+        FROM blog_posts 
+        ORDER BY published_at DESC, id DESC
+    """).fetchall()
+    return {"posts": [dict(r) for r in rows]}
+
+
+@router.post("/newsletter/generate")
+async def generate_newsletter(req: GenerateNewsletterRequest, db: sqlite3.Connection = Depends(get_db)):
+    """Dynamically generate a news column based on current court stats using Vertex AI."""
+    # 1. Fetch active rankings and stats to context-feed the prompt
+    squads = db.execute("SELECT squad_name, win_streak FROM squad_rankings ORDER BY win_streak DESC LIMIT 3").fetchall()
+    squads_list = [f"{s['squad_name']} ({s['win_streak']}W streak)" for s in squads]
+    
+    kings = db.execute("""
+        SELECT ck.court_id, c.name as court_name, ck.king_id, ck.win_streak 
+        FROM court_kings ck 
+        JOIN courts c ON ck.court_id = c.id 
+        LIMIT 3
+    """).fetchall()
+    kings_list = [f"{k['king_id']} ruling {k['court_name']} with a {k['win_streak']}W streak" for k in kings]
+    
+    # Check preferred court of generating player to dynamically adjust persona
+    p_row = db.execute("SELECT preferred_court FROM player_stats WHERE player_id = ?", (req.player_id,)).fetchone()
+    pref_court = p_row["preferred_court"] if p_row else "West 4th St (The Cage)"
+    
+    is_gym = any(x in pref_court for x in ["Life Time", "LA Fitness", "Gym", "Garden", "YMCA"])
+    persona = "The Hardwood Sentinel" if is_gym else "The Concrete Sentinel"
+    court_type = "Hardwood" if is_gym else "Asphalt/Concrete"
+    
+    prompt = f"""
+    You are {persona}, the sentient, trash-talking guardian of local pickup sports court legacy.
+    You watch every run, count every bucket, and keep track of who owns the court.
+    Write a hilarious, high-energy, sports-column-style news update about the current state of local pickup runs.
+    
+    Current Court Facts:
+    - Top Active Squads: {", ".join(squads_list) if squads_list else "None active"}
+    - Court Kings: {", ".join(kings_list) if kings_list else "None claimed"}
+    - Focus Court: {pref_court} ({court_type} court)
+    - Featured player in the neighborhood: {req.player_id}
+    
+    Tone guidelines:
+    - First-person perspective ("I am {persona}").
+    - Highly entertaining, competitive, slightly arrogant guardian persona.
+    - References to streetball culture, modern NBA players, and local legacies.
+    - Keep it concise but impact-heavy (about 3 paragraphs).
+    - Provide a catchy, bold headline.
+    - Provide 2-3 relevant tags (comma separated, e.g. "COURT BEEF,LEGACY").
+    
+    Return ONLY a JSON object:
+    {{
+      "title": "A Catchy Bold Headline",
+      "tags": "TAG1,TAG2",
+      "content": "Full article text..."
+    }}
+    """
+    
+    fallback_title = "The Sentinel Has Spoken"
+    fallback_tags = "COURT UPDATE,LEGACY"
+    fallback_content = f"I am {persona}, and I am watching the runs at {pref_court}. The level of play is high, the lines are long, and players like {req.player_id} are trying to make a name for themselves. Squads like {squads_list[0] if squads_list else 'the neighborhood crews'} are dominating the rankings. Keep running, keep sweating, and respect the game."
+    
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.85
+            )
+        )
+        data = json.loads(response.text)
+        title = data.get("title", fallback_title)
+        tags = data.get("tags", fallback_tags)
+        content = data.get("content", fallback_content)
+    except Exception as e:
+        log.error("Failed to generate Chronicles column via Gemini: %s", e)
+        title = fallback_title
+        tags = fallback_tags
+        content = fallback_content
+        
+    try:
+        # Insert generated post
+        db.execute("""
+            INSERT INTO blog_posts (title, content, author, tags)
+            VALUES (?, ?, ?, ?)
+        """, (title, content, persona, tags))
+        
+        # Reward user 5 credits for triggering a column generation
+        db.execute("""
+            UPDATE player_stats 
+            SET credits = credits + 5 
+            WHERE player_id = ?
+        """, (req.player_id,))
+        
+        # Get updated credits
+        row = db.execute("SELECT credits FROM player_stats WHERE player_id = ?", (req.player_id,)).fetchone()
+        updated_credits = row["credits"] if row else 35
+        
+        db.execute("INSERT INTO queue_events (team_id, event_type, details) VALUES (?, 'BLOG_GENERATE', ?)", 
+                   (req.player_id, f"Generated Chronicles column: '{title}'"))
+        db.commit()
+        
+        return {
+            "status": "ok",
+            "message": "New Chronicles column published successfully! +5 Credits rewarded.",
+            "credits": updated_credits,
+            "post": {
+                "title": title,
+                "content": content,
+                "author": persona,
+                "tags": tags,
+                "published_at": datetime.now().isoformat()
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 

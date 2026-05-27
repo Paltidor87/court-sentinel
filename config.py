@@ -11,10 +11,10 @@ BOT_TIER = os.getenv("BOT_TIER", "cost").strip().lower()
 TIER_PRESETS = {
     "cost": {
         "chat_model": "llama3:latest", # Local Ollama
-        "chat_fallbacks": "qwen3:8b,gemini-1.5-flash,openai/gpt-4o-mini",
-        "vision_model": "gemini-1.5-flash", # No local vision yet, using Plan
+        "chat_fallbacks": "qwen3:8b,gemini-2.5-flash,openai/gpt-4o-mini",
+        "vision_model": "gemini-2.5-flash", # No local vision yet, using Plan
         "vision_fallbacks": "openai/gpt-4o-mini,nvidia/nemotron-nano-12b-v2-vl:free",
-        "ugc_model": "gemini-1.5-flash",
+        "ugc_model": "gemini-2.5-flash",
         "ugc_fallbacks": "qwen3:8b,openai/gpt-4o-mini",
     },
     "elite": {

@@ -6,12 +6,29 @@ DB_PATH = "data/courtfinder/courts.db"
 def seed():
     conn = sqlite3.connect(DB_PATH)
     
-    # 1. Clear existing rankings for a fresh start
+    # 1. Ensure tables exist and clear existing rankings for a fresh start
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+            email TEXT PRIMARY KEY,
+            player_id TEXT,
+            subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS blog_posts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            content TEXT NOT NULL,
+            author TEXT NOT NULL,
+            tags TEXT,
+            published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    """)
     conn.execute("DELETE FROM squad_rankings")
     conn.execute("DELETE FROM court_kings")
     conn.execute("DELETE FROM players")
     conn.execute("DELETE FROM player_stats")
     conn.execute("DELETE FROM legacy_nicknames")
+    conn.execute("DELETE FROM newsletter_subscribers")
+    conn.execute("DELETE FROM blog_posts")
 
     # 2. Seed Elite Players
     players = [
@@ -63,9 +80,23 @@ def seed():
     for n in nicknames:
         conn.execute("INSERT INTO legacy_nicknames (player_ids, nickname, wins_together) VALUES (?,?,?)", n)
 
+    # 6. Seed Initial Blog Posts
+    posts = [
+        ("Legend of the Cage: How Peggs Silenced the Bridge Burners", 
+         "It was a humid Tuesday evening when the Bridge Burners rolled deep into West 4th St. They had a 7-game streak, talking heavy on the sidelines. But Peggs was waiting. Stepping onto the concrete, the Bucket Getter went to work. Off-dribble pull-ups, contested baseline fadeaways—nothing but net. By the time the dust settled, the Burners were sent packing, and the Cage had a new king. The Concrete Sentinel remembers. Respect the run.",
+         "The Concrete Sentinel",
+         "COURT BEEF,LEGACY"),
+        ("Hardwood Sanctuary: Inside the Life Time Sky Surge",
+         "While the parks offer the pure love of the game, the indoor runs at Life Time Sky are raising the stakes. At 10 Credits a day pass, the hardwood is immaculate, the spacing is league-level, and the sweat is real. But don't think the Concrete Sentinel doesn't see you inside. Hardwood or asphalt, you still have to lock in. Sign the waiver, get your QR code, and show us what you're worth.",
+         "The Hardwood Sentinel",
+         "PREMIUM RUN,FACILITY")
+    ]
+    for p in posts:
+        conn.execute("INSERT INTO blog_posts (title, content, author, tags) VALUES (?,?,?,?)", p)
+
     conn.commit()
     conn.close()
-    print("Database seeded with legendary rankings.")
+    print("Database seeded with legendary rankings and columns.")
 
 if __name__ == "__main__":
     seed()

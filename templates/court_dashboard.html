@@ -4,33 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Court Sentinel OS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Oswald:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --nba-blue: #1D428A;
             --nba-red: #C8102E;
             --nba-gold: #FFD700;
-            --dark-bg: #050505;
-            --card-bg: rgba(20, 20, 20, 0.7);
+            --dark-bg: #07070a;
+            --card-bg: rgba(18, 18, 24, 0.75);
             --accent: var(--nba-gold);
-            --biz-green: #00FF41;
+            --biz-green: #00FF88;
             --text-main: #FFFFFF;
-            --text-dim: #A0A0A0;
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-dim: #8E8E9F;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-glow: rgba(255, 215, 0, 0.1);
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            outline: none; 
+            margin: 0;
+            padding: 0;
+        }
+
         html, body {
             background-color: var(--dark-bg);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
             height: 100%;
-            overflow: hidden; /* App feel, handle scroll in views */
+            overflow: hidden;
         }
 
-        /* Layout Container for Desktop Centering */
+        /* App Container Shell */
         .app-container {
             max-width: 450px;
             margin: 0 auto;
@@ -38,40 +44,626 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            background: #000;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            background: #020203;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+            border-left: 1px solid var(--glass-border);
+            border-right: 1px solid var(--glass-border);
         }
 
         /* Top Header */
         .app-header {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(5, 5, 8, 0.85);
             backdrop-filter: blur(20px);
-            padding: 20px 25px;
+            padding: 18px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--glass-border);
             z-index: 100;
         }
+
         .app-logo {
             font-family: 'Oswald', sans-serif;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             text-transform: uppercase;
             letter-spacing: 2px;
-            font-weight: 700;
+            font-weight: 800;
         }
+
         .app-logo span { color: var(--accent); }
 
-        /* Navigation */
+        /* Pulse Live Indicator */
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--nba-red);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(200, 16, 46, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(200, 16, 46, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(200, 16, 46, 0); }
+        }
+
+        /* Scrollable Content Area */
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 30px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Custom Scrollbar */
+        .app-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .app-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .app-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+        }
+        .app-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* View Sections styling */
+        .view-section { 
+            display: none; 
+            padding: 20px; 
+            animation: slideUp 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
+
+        .view-section.active { 
+            display: block; 
+        }
+
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(15px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* The Sentient Commentator Bubble */
+        .sentient-bubble {
+            background: linear-gradient(135deg, rgba(29, 66, 138, 0.15) 0%, rgba(200, 16, 46, 0.1) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 16px 20px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: #eee;
+            position: relative;
+            margin-bottom: 20px;
+            font-style: italic;
+            box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.02);
+        }
+
+        .sentient-bubble::before {
+            content: 'CONCRETE SENTINEL';
+            position: absolute;
+            top: -8px;
+            left: 15px;
+            background: #111;
+            padding: 0 8px;
+            font-size: 0.55rem;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: 1px;
+            border-radius: 4px;
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Springboard Dashboard Grid */
+        .springboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .tile {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .tile:active { 
+            transform: scale(0.96); 
+            background: rgba(255, 215, 0, 0.08); 
+            border-color: var(--accent);
+        }
+
+        .tile::after {
+            content: ''; 
+            position: absolute; 
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at top right, var(--accent) 0%, transparent 60%);
+            opacity: 0.04;
+        }
+
+        .tile-icon { 
+            font-size: 1.8rem; 
+            margin-bottom: 8px; 
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.2)); 
+        }
+
+        .tile-label { 
+            font-family: 'Oswald', sans-serif; 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            font-weight: 700;
+            color: #ddd;
+        }
+
+        /* Inside the Court Studio Desk Widget */
+        .studio-desk-card {
+            background: linear-gradient(180deg, rgba(15, 15, 20, 0.9) 0%, rgba(5, 5, 8, 0.95) 100%);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .studio-desk-header {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .studio-desk-header span {
+            color: var(--nba-red);
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .studio-avatars-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            gap: 6px;
+        }
+
+        .avatar-pill {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.3s;
+        }
+
+        .avatar-pill.speaking {
+            background: var(--nba-blue);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(29, 66, 138, 0.5);
+            transform: scale(1.05);
+        }
+
+        .studio-bubble {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 12px 14px;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: #ddd;
+        }
+
+        .studio-bubble-avatar {
+            font-size: 1.6rem;
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));
+        }
+
+        .studio-bubble-content {
+            flex: 1;
+        }
+
+        .studio-bubble-host {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.65rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        /* Sponsor Spotlights (HTML Ad styling) */
+        .sponsor-card {
+            background: linear-gradient(135deg, rgba(200, 16, 46, 0.08) 0%, rgba(255, 215, 0, 0.05) 100%);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+        }
+
+        .sponsor-card::before {
+            content: 'SPONSOR SPOTLIGHT';
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--nba-gold);
+            color: black;
+            font-size: 0.5rem;
+            font-weight: 900;
+            padding: 2px 8px;
+            border-bottom-left-radius: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .sponsor-icon {
+            font-size: 1.8rem;
+            background: rgba(0, 0, 0, 0.4);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sponsor-details h4 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .sponsor-details p {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        /* Discover / Search Filters */
+        .filter-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .filter-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-pill {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .filter-pill.active {
+            background: var(--accent);
+            color: black;
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+        }
+
+        /* Search Input */
+        .search-bar-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 14px 20px;
+            border-radius: 14px;
+            width: 100%;
+            color: white;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .search-bar:focus {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.05);
+        }
+
+        /* Court Hero and Details */
+        .court-hero {
+            background: linear-gradient(150deg, rgba(20, 20, 25, 0.9) 0%, rgba(5, 5, 8, 0.95) 100%);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .vibe-tag {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 0.55rem;
+            font-weight: 900;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .vibe-heavy { background: var(--nba-red); color: white; box-shadow: 0 4px 10px rgba(200, 16, 46, 0.3); }
+        .vibe-chill { background: var(--biz-green); color: black; box-shadow: 0 4px 10px rgba(0, 255, 136, 0.2); }
+        .vibe-elite { background: var(--accent); color: black; box-shadow: 0 4px 10px rgba(255, 215, 0, 0.2); }
+        .vibe-ghost { background: #555; color: white; }
+
+        .court-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            margin-top: 10px;
+            line-height: 1.1;
+            letter-spacing: -0.5px;
+        }
+
+        .court-loc {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* Stats Pill Row */
+        .stats-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .pill {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            padding: 10px;
+            border-radius: 12px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .pill-val {
+            display: block;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--accent);
+            font-family: 'Oswald', sans-serif;
+        }
+
+        .pill-lbl {
+            font-size: 0.55rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-top: 2px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* List Items styling */
+        .list-item {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            padding: 16px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .list-item:active {
+            transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .list-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #fff;
+        }
+
+        .list-sub {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        .badge {
+            font-size: 0.55rem;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        .badge-partner { background: var(--biz-green); color: black; }
+        .badge-king { background: var(--accent); color: black; }
+        .badge-access { background: rgba(255, 255, 255, 0.1); color: white; }
+
+        /* Action Buttons */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+            font-family: 'Oswald', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary { background: #fff; color: #000; }
+        .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+        .btn-outline { background: transparent; border: 1px solid #333; color: white; }
+        .btn-outline:active { transform: scale(0.97); background: rgba(255, 255, 255, 0.03); }
+
+        /* Paid Sessions & Crowdfund Checkout Widgets */
+        .checkout-box {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.03) 0%, rgba(29, 66, 138, 0.05) 100%);
+            border: 1px solid rgba(0, 255, 136, 0.15);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .checkout-header {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--biz-green);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .checkout-tracker {
+            background: rgba(0,0,0,0.3);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .checkout-bar {
+            background: var(--biz-green);
+            height: 100%;
+            width: 64%; /* 64% raised */
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .checkout-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+
+        .checkout-meta span strong {
+            color: #fff;
+        }
+
+        /* Broadcast News Ticker */
+        .broadcast-ticker {
+            background: linear-gradient(90deg, var(--nba-blue), #000);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 6px 0;
+            display: flex;
+            overflow: hidden;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .ticker-move {
+            display: inline-block;
+            animation: scrollText 24s linear infinite;
+            padding-left: 100%;
+            white-space: nowrap;
+        }
+
+        @keyframes scrollText {
+            from { transform: translateX(0); }
+            to { transform: translateX(-100%); }
+        }
+
+        /* Bottom Tab Bar Navigation */
         .bottom-nav {
-            background: rgba(10, 10, 10, 0.85);
+            background: rgba(8, 8, 12, 0.95);
             backdrop-filter: blur(20px);
             border-top: 1px solid var(--glass-border);
             display: flex;
             justify-content: space-around;
-            padding: 15px 0 35px; /* Extra bottom for safe area */
+            padding: 12px 0 28px;
             z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
         }
+
+        .bottom-nav.hidden {
+            transform: translateY(100%);
+        }
+
         .nav-item {
             display: flex;
             flex-direction: column;
@@ -81,173 +673,91 @@
             font-weight: 700;
             text-transform: uppercase;
             text-decoration: none;
-            transition: color 0.2s, transform 0.2s;
-        }
-        .nav-item.active { color: var(--accent); transform: translateY(-2px); }
-        .nav-icon { font-size: 1.4rem; margin-bottom: 5px; }
-
-        /* Scrollable Content Area */
-        .app-content {
-            flex: 1;
-            overflow-y: auto;
-            padding-bottom: 20px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Views */
-        .view-section { display: none; padding: 25px; animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        .view-section.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Springboard Dashboard */
-        .springboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 10px;
-        }
-        .tile {
-            background: var(--card-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 25px 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
             transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
+            gap: 4px;
         }
-        .tile:active { transform: scale(0.95); background: rgba(255, 215, 0, 0.1); }
-        .tile::after {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at top right, var(--nba-gold) 0%, transparent 70%);
-            opacity: 0.05;
-        }
-        .tile-icon { font-size: 2.2rem; margin-bottom: 12px; filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3)); }
-        .tile-label { font-family: 'Oswald', sans-serif; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
-        
-        /* Specialized Cards */
-        .court-hero {
-            background: linear-gradient(145deg, #111 0%, #000 100%);
-            border-radius: 24px;
-            padding: 25px;
-            border: 1px solid var(--glass-border);
-            margin-bottom: 25px;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .court-hero::before {
-            content: ''; position: absolute; top: -1px; left: -1px; right: -1px; bottom: -1px;
-            border-radius: 24px; background: linear-gradient(45deg, transparent, var(--glass-border), transparent);
-            z-index: -1;
-        }
-        .vibe-tag {
-            position: absolute; top: 20px; right: 20px;
-            background: var(--nba-red); font-size: 0.6rem; font-weight: 900;
-            padding: 5px 10px; border-radius: 6px; text-transform: uppercase;
-            box-shadow: 0 4px 10px rgba(200, 16, 46, 0.3);
-        }
-        .badge {
-            font-size: 0.6rem; padding: 4px 8px; border-radius: 4px;
-            background: rgba(255,255,255,0.1); color: #fff; margin-right: 6px;
-            text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;
-        }
-        .badge-partner { background: var(--biz-green); color: black; }
-        .badge-king { background: var(--accent); color: black; }
-        .court-title { font-family: 'Oswald', sans-serif; font-size: 2.2rem; margin: 0; margin-top: 15px; line-height: 1; letter-spacing: -1px; }
-        .court-loc { color: var(--text-dim); font-size: 0.85rem; margin-top: 8px; font-weight: 500; }
 
-        /* Stats Pill Row */
-        .stats-row { display: flex; gap: 12px; margin-top: 25px; }
-        .pill {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            padding: 12px; border-radius: 16px; flex: 1; text-align: center;
+        .nav-item.active {
+            color: var(--accent);
         }
-        .pill-val { display: block; font-weight: 900; font-size: 1.1rem; color: var(--accent); font-family: 'Oswald', sans-serif; }
-        .pill-lbl { font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase; margin-top: 4px; font-weight: 700; }
 
-        /* Action Buttons */
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; }
-        .btn {
-            border: none; padding: 18px; border-radius: 14px;
-            font-weight: 900; font-size: 0.85rem; text-transform: uppercase;
-            cursor: pointer; transition: all 0.2s; letter-spacing: 1px;
-            font-family: 'Oswald', sans-serif;
+        .nav-icon {
+            font-size: 1.25rem;
         }
-        .btn-primary { background: #fff; color: #000; box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
-        .btn-outline { background: transparent; border: 1px solid #333; color: white; }
-        .btn:active { transform: scale(0.96); opacity: 0.8; }
 
-        /* Search List */
-        .search-bar {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            padding: 16px 20px; border-radius: 16px; width: 100%; color: white;
-            margin-bottom: 25px; font-size: 1rem; transition: border-color 0.3s;
-        }
-        .search-bar:focus { border-color: var(--accent); }
-        .list-item {
-            background: rgba(15, 15, 15, 0.5); border: 1px solid var(--glass-border);
-            padding: 18px; border-radius: 18px; margin-bottom: 12px;
-            display: flex; justify-content: space-between; align-items: center;
-            transition: transform 0.2s;
-        }
-        .list-item:active { transform: scale(0.98); background: rgba(255, 255, 255, 0.05); }
-        .list-name { font-weight: 700; font-size: 1rem; color: #eee; }
-        .list-sub { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
-
-        /* Profile Card */
+        /* Profile Hooper Card */
         .hooper-card {
-            background: linear-gradient(135deg, var(--nba-blue) 0%, #050505 100%);
-            border-radius: 28px; padding: 35px 25px; text-align: center;
-            border: 1px solid rgba(255,255,255,0.1); margin-bottom: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            background: linear-gradient(135deg, var(--nba-blue) 0%, #060608 100%);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            position: relative;
         }
+
         .archetype {
-            background: var(--accent); color: black; padding: 4px 12px;
-            border-radius: 12px; font-size: 0.65rem; font-weight: 900;
-            display: inline-block; margin-bottom: 15px; text-transform: uppercase;
+            background: var(--accent);
+            color: black;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.6rem;
+            font-weight: 800;
+            display: inline-block;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        /* Ticker */
-        .broadcast-ticker {
-            background: linear-gradient(90deg, var(--nba-blue), #000);
-            color: white; font-size: 0.7rem; font-weight: 800; padding: 8px 0;
-            display: flex; overflow: hidden; border-top: 1px solid rgba(255,255,255,0.1);
+        /* Sections and Titles */
+        .section-header {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+            color: #ddd;
         }
-        .ticker-move { display: inline-block; animation: scrollText 25s linear infinite; padding-left: 100%; }
-        @keyframes scrollText { from { transform: translateX(0); } to { transform: translateX(-100%); } }
-
-        /* Live Pulse */
-        .pulse-dot {
-            width: 8px; height: 8px; background: var(--nba-red);
-            border-radius: 50%; display: inline-block; margin-right: 6px;
-            animation: pulse-red 1.5s infinite;
-        }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(200, 16, 46, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(200, 16, 46, 0); } 100% { box-shadow: 0 0 0 0 rgba(200, 16, 46, 0); } }
-    </style>
     </style>
 </head>
 <body>
 
     <div class="app-container">
+        <!-- Top App Header -->
         <div class="app-header">
             <div class="app-logo">COURT SENTINEL <span>OS</span></div>
-            <div style="font-size: 0.75rem; font-weight: 800; color: var(--nba-red); display: flex; align-items: center;">
-                <span class="pulse-dot"></span> LIVE
+            <div style="font-size: 0.7rem; font-weight: 800; color: var(--nba-red); display: flex; align-items: center; letter-spacing: 0.5px;">
+                <span class="pulse-dot"></span> LIVE RUNS
             </div>
         </div>
 
-        <div class="app-content">
+        <div class="app-content" id="app-scroll-content">
+            
             <!-- Home / Springboard View -->
             <div id="view-home" class="view-section active">
                 <div class="sentient-bubble" id="home-voice">
                     "The world is your court. 42 runs active worldwide. Where are you claiming your legacy today?"
+                </div>
+
+                <!-- Inside the Court Studio Desk -->
+                <div class="studio-desk-card">
+                    <div class="studio-desk-header">
+                        INSIDE THE COURT <span>🎙️ STUDIO DESK</span>
+                    </div>
+                    <div class="studio-avatars-row">
+                        <div class="avatar-pill" data-host="Ernie">🎙️ Ernie</div>
+                        <div class="avatar-pill" data-host="Kenny">💻 Kenny</div>
+                        <div class="avatar-pill" data-host="Chuck">🍩 Chuck</div>
+                        <div class="avatar-pill" data-host="Shaq">👑 Shaq</div>
+                    </div>
+                    <div class="studio-bubble" id="studio-comments">
+                        <div class="studio-bubble-avatar">🏀</div>
+                        <div class="studio-bubble-content">
+                            <div class="studio-bubble-host">Desk Status</div>
+                            <div class="studio-bubble-text">"Tuning into the live feeds..."</div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="springboard">
@@ -264,78 +774,177 @@
                         <div class="tile-label">My Bio</div>
                     </div>
                     <div class="tile" onclick="triggerAudit()">
-                        <div class="tile-icon">🛰️</div>
+                        <div class="tile-icon">📡</div>
                         <div class="tile-label">Vibe Check</div>
                     </div>
                     <div class="tile" onclick="alert('Squad management coming soon.')">
                         <div class="tile-icon">👥</div>
                         <div class="tile-label">Squads</div>
                     </div>
-                    <div class="tile" onclick="alert('Settings and Asphalt ID coming soon.')">
+                    <div class="tile" onclick="alert('Asphalt ID settings coming soon.')">
                         <div class="tile-icon">⚙️</div>
                         <div class="tile-label">Settings</div>
+                    </div>
+                </div>
+
+                <!-- HTML Sponsor Card Integration (Sponsor Spotlight) -->
+                <div class="sponsor-card" onclick="alert('Nike Hoop Academy portal opening soon.')">
+                    <div class="sponsor-icon">⚡</div>
+                    <div class="sponsor-details">
+                        <h4>Nike Hoop Academy</h4>
+                        <p>Unlock your true potential. Premium drills & gear details inside.</p>
                     </div>
                 </div>
             </div>
 
             <!-- Discover View -->
             <div id="view-discover" class="view-section">
-                <input type="text" class="search-bar" placeholder="Find a court anywhere..." onkeyup="handleSearch(event)">
+                <div class="search-bar-container">
+                    <input type="text" class="search-bar" placeholder="Find a court or gym..." onkeyup="handleSearch(event)">
+                </div>
+
+                <!-- Search Filters -->
+                <div class="filter-row">
+                    <div class="filter-pill active" onclick="setFilter('all', this)">All Runs</div>
+                    <div class="filter-pill" onclick="setFilter('active', this)">Active</div>
+                    <div class="filter-pill" onclick="setFilter('partner', this)">Partners</div>
+                    <div class="filter-pill" onclick="setFilter('fee', this)">Indoor Gyms</div>
+                </div>
+
                 <div id="search-results">
-                    <!-- Simulated Recent/Nearby Courts -->
-                    <div class="list-item" onclick="selectCourt('NYC_West_4th', 'West 4th St', 'Manhattan')">
+                    <!-- Default seeded listing -->
+                    <div class="list-item" onclick="selectCourt('NYC_West_4th_Street_Courts', 'West 4th St \'The Cage\'', 'Sixth Ave, Manhattan', 'Partner (Nike)', 'Public')">
                         <div>
-                            <div class="list-name">West 4th St "The Cage"</div>
-                            <div class="list-sub">New York • 14 Checked In</div>
+                            <span class="badge badge-partner">Nike Run</span>
+                            <div class="list-name" style="margin-top: 4px;">West 4th St "The Cage"</div>
+                            <div class="list-sub">Manhattan • 14 checked in</div>
                         </div>
-                        <div style="color:var(--accent); font-weight:900;">LIVE</div>
+                        <div style="color:var(--accent); font-weight:700; font-family:'Oswald';">GO</div>
                     </div>
-                    <div class="list-item" onclick="selectCourt('LI_Manor', 'Manor Field Park', 'Huntington')">
+                    <div class="list-item" onclick="selectCourt('NYC_Brooklyn_Bridge_Park', 'Brooklyn Bridge Park', 'Pier 2, Brooklyn', 'Public', 'Public')">
                         <div>
-                            <div class="list-name">Manor Field Park</div>
-                            <div class="list-sub">Huntington • Heavy Run</div>
+                            <span class="badge badge-access">Public</span>
+                            <div class="list-name" style="margin-top: 4px;">Brooklyn Bridge Park</div>
+                            <div class="list-sub">Brooklyn • Heavy Run</div>
                         </div>
-                        <div style="color:var(--biz-green); font-weight:900;">OPEN</div>
+                        <div style="color:var(--accent); font-weight:700; font-family:'Oswald';">GO</div>
                     </div>
                 </div>
             </div>
 
-    <!-- Court Detail View (Drill down) -->
-    <div id="view-court-detail" class="view-section">
-        <div style="margin-bottom: 15px; color: var(--accent); font-weight: 800; font-size: 0.7rem;" onclick="showView('discover')">← BACK TO EXPLORE</div>
-        
-        <div class="court-hero" id="hero-card">
-            <div class="vibe-tag" id="det-vibe">HEAVY</div>
-            <div id="det-badges" style="margin-bottom: 5px;"></div>
-            <div class="court-title" id="det-name">WEST 4TH ST</div>
-            <div class="court-loc" id="det-loc">Sixth Ave, Manhattan</div>
-            
-            <div class="stats-row">
-                <div class="pill">
-                    <span class="pill-val" id="det-wait">15m</span>
-                    <span class="pill-lbl">Wait</span>
+            <!-- Court Detail View (SCROLLABLE & FIXED NESTING) -->
+            <div id="view-court-detail" class="view-section">
+                <div style="margin-bottom: 15px; color: var(--accent); font-weight: 800; font-size: 0.7rem; font-family:'Oswald'; cursor: pointer; letter-spacing: 0.5px;" onclick="closeCourtDetail()">
+                    ← BACK TO EXPLORE
                 </div>
-                <div class="pill">
-                    <span class="pill-val" id="det-count">12</span>
-                    <span class="pill-lbl">Players</span>
+                
+                <div class="court-hero" id="hero-card">
+                    <div class="vibe-tag vibe-heavy" id="det-vibe">HEAVY</div>
+                    <div id="det-badges" style="margin-bottom: 5px;"></div>
+                    <div class="court-title" id="det-name">WEST 4TH ST</div>
+                    <div class="court-loc" id="det-loc">Sixth Ave, Manhattan</div>
+                    
+                    <div class="stats-row">
+                        <div class="pill">
+                            <span class="pill-val" id="det-wait">15m</span>
+                            <span class="pill-lbl">Wait</span>
+                        </div>
+                        <div class="pill">
+                            <span class="pill-val" id="det-count">12</span>
+                            <span class="pill-lbl">Players</span>
+                        </div>
+                        <div class="pill">
+                            <span class="pill-val">👑</span>
+                            <span class="pill-lbl">Owned</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="pill">
-                    <span class="pill-val">👑</span>
-                    <span class="pill-lbl">Owned</span>
+
+                <!-- Monetization Section: Gym Bookings & Crowdfunded Runs -->
+                <div class="checkout-box" id="monetization-widget">
+                    <div class="checkout-header">
+                        <span id="mono-title">CROWDFUNDED RUN</span>
+                        <span style="color:#fff;" id="mono-cost">$10 / $50</span>
+                    </div>
+                    <div class="checkout-tracker">
+                        <div class="checkout-bar" id="mono-progress"></div>
+                    </div>
+                    <div class="checkout-meta">
+                        <span id="mono-desc">Pitch in to buyout the court for a private squad run.</span>
+                    </div>
+                    <div class="btn-group" style="margin-top: 10px; margin-bottom: 0;">
+                        <button class="btn btn-primary" onclick="contributeFunds()" style="background:var(--biz-green); color:#000;">Pitch in $5</button>
+                        <button class="btn btn-outline" onclick="buyoutCourt()" id="mono-buyout-btn">Buy Out $50</button>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="joinQueue()">Join Got Next</button>
+                    <button class="btn btn-outline" onclick="triggerAudit()">AI Vision Audit</button>
+                </div>
+
+                <!-- Sponsored Got Next Queue Title -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; margin-bottom: 12px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px;">
+                    <h2 class="section-header" style="margin-bottom: 0;">Got Next Queue</h2>
+                    <span style="font-size: 0.6rem; font-weight: 700; color: var(--biz-green); letter-spacing: 0.5px; text-transform: uppercase;">
+                        ⚡ Powered by Gatorade
+                    </span>
+                </div>
+                
+                <div id="queue-list">
+                    <!-- Queue items bind dynamically -->
                 </div>
             </div>
-        </div>
+
+            <!-- Leaderboard View -->
+            <div id="view-leaderboard" class="view-section">
+                <h2 class="section-header">City Rankings</h2>
+                <div id="rank-list">
+                    <!-- Leaderboard items -->
+                </div>
+            </div>
+
+            <!-- Profile View -->
+            <div id="view-profile" class="view-section">
+                <div class="hooper-card">
+                    <div class="archetype" id="prof-arch">BUCKET GETTER</div>
+                    <h1 style="font-family:'Oswald'; font-size:2.4rem; font-weight: 800; margin:0;" id="prof-name">PEGGS</h1>
+                    <p style="font-size:0.65rem; opacity:0.6; margin-top:4px; font-weight: 700; letter-spacing: 0.5px;">ELITE STATUS • WEST 4TH VET</p>
+                    
+                    <div class="stats-row" style="margin-top:20px;">
+                        <div class="pill" style="background:rgba(0,0,0,0.3)">
+                            <span class="pill-val">74%</span>
+                            <span class="pill-lbl">Win Rate</span>
+                        </div>
+                        <div class="pill" style="background:rgba(0,0,0,0.3)">
+                            <span class="pill-val">37</span>
+                            <span class="pill-lbl">Wins</span>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Sponsor Badge on Bio Card -->
+                    <div style="margin-top: 16px; font-size: 0.6rem; font-weight: 800; color: var(--biz-green); border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px; letter-spacing: 0.5px;">
+                        💧 GATORADE CERTIFIED HYDRATED BUCKET GETTER
+                    </div>
+                </div>
+
+                <h3 class="section-header">Teammate Chemistry</h3>
+                <div id="chem-list">
+                    <!-- Chemistry items -->
+                </div>
+            </div>
 
         </div> <!-- End app-content -->
 
+        <!-- News Ticker -->
         <div class="broadcast-ticker">
             <div class="ticker-move">
-                GLOBAL RUNS ACTIVE • WORLDWIDE LEADERBOARD UPDATED • TEAM PEGGS ON A 4W STREAK • NEW COURTS ADDED IN CHICAGO AND LA • JOIN THE SQUAD • 
+                GLOBAL RUNS ACTIVE • WORLDWIDE LEADERBOARD UPDATED • TEAM PEGGS ON A 4W STREAK • NEW COURTS ADDED IN CHICAGO AND LA • JOIN THE SQUAD • GATORADE REHYDRATION ZONES LIVE AT ALL PARTNER COURTS •
             </div>
         </div>
 
-        <!-- Bottom Nav -->
-        <nav class="bottom-nav">
+        <!-- Sticky Bottom Nav Bar -->
+        <nav class="bottom-nav" id="app-bottom-nav">
             <a href="#" class="nav-item active" id="nav-home" onclick="showView('home')">
                 <span class="nav-icon">🏠</span>
                 Home
@@ -355,54 +964,12 @@
         </nav>
     </div> <!-- End app-container -->
 
-        <div class="btn-group">
-            <button class="btn btn-primary" onclick="joinQueue()">Join Queue</button>
-            <button class="btn btn-outline" onclick="triggerAudit()">AI Audit</button>
-        </div>
-
-        <h2 style="font-family:'Oswald'; font-size:1.2rem; margin-top:30px; text-transform:uppercase;">Current Queue</h2>
-        <div id="queue-list">
-            <!-- Queue items -->
-        </div>
-    </div>
-
-    <!-- Leaderboard View -->
-    <div id="view-leaderboard" class="view-section">
-        <h2 style="font-family:'Oswald'; font-size:1.5rem; text-transform:uppercase;">City Rankings</h2>
-        <div id="rank-list">
-            <!-- Leaderboard items -->
-        </div>
-    </div>
-
-    <!-- Profile View -->
-    <div id="view-profile" class="view-section">
-        <div class="hooper-card">
-            <div class="archetype">SHARPSHOOTER</div>
-            <h1 style="font-family:'Oswald'; font-size:2.5rem; margin:0;">PEGGS</h1>
-            <p style="font-size:0.7rem; opacity:0.6; margin-top:5px;">ELITE STATUS • WEST 4TH VET</p>
-            
-            <div class="stats-row" style="margin-top:20px;">
-                <div class="pill" style="background:rgba(0,0,0,0.3)">
-                    <span class="pill-val">68%</span>
-                    <span class="pill-lbl">Win Rate</span>
-                </div>
-                <div class="pill" style="background:rgba(0,0,0,0.3)">
-                    <span class="pill-val">42</span>
-                    <span class="pill-lbl">Wins</span>
-                </div>
-            </div>
-        </div>
-
-        <h3 style="font-size:0.7rem; text-transform:uppercase; color:var(--accent);">Teammate Chemistry</h3>
-        <div id="chem-list">
-            <!-- Chemistry items -->
-        </div>
-    </div>
-
-
     <script>
         let currentView = 'home';
         let activeCourtId = null;
+        let currentFilter = 'all';
+        let crowdfundAmount = 10;
+        let isIndoorGym = false;
 
         function showView(viewId) {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
@@ -411,54 +978,166 @@
             const targetView = document.getElementById('view-' + (viewId === 'court-detail' ? 'court-detail' : viewId));
             if (targetView) targetView.classList.add('active');
             
-            // Handle nav items (some views like court-detail don't have a direct nav item)
+            // Handle nav items highlight
             const navItem = document.getElementById('nav-' + viewId);
             if (navItem) {
                 navItem.classList.add('active');
-            } else if (viewId === 'court-detail' || viewId === 'home') {
-                // If in detail, keep home or discover active depending on where we came from
-                // For now, just default to home if not matched
-                document.getElementById('nav-home').classList.add('active');
+            } else if (viewId === 'court-detail') {
+                // Hides tab bar when viewing detailed pages to maximize space
+                document.getElementById('app-bottom-nav').classList.add('hidden');
             }
             
+            // Re-show bottom nav if navigating away from detail view
+            if (viewId !== 'court-detail') {
+                document.getElementById('app-bottom-nav').classList.remove('hidden');
+            }
+
             currentView = viewId;
             
+            // Reset scroll position on view load
+            document.getElementById('app-scroll-content').scrollTop = 0;
+            
+            if(viewId === 'home') fetchStudioCommentary();
             if(viewId === 'leaderboard') fetchLeaderboard();
             if(viewId === 'profile') fetchProfile();
         }
 
-        async function selectCourt(id, name, loc, source, accessType) {
+        function closeCourtDetail() {
+            showView('discover');
+        }
+
+        async function selectCourt(id, name, loc, source, accessType, fee) {
             activeCourtId = id;
             document.getElementById('det-name').innerText = name.toUpperCase();
             document.getElementById('det-loc').innerText = loc;
             
+            // Vibe tags
+            const vibeTag = document.getElementById('det-vibe');
+            vibeTag.className = 'vibe-tag'; // reset
+            if (source && source.includes('Nike')) {
+                vibeTag.innerText = 'ELITE';
+                vibeTag.classList.add('vibe-elite');
+            } else if (fee) {
+                vibeTag.innerText = 'PREMIUM';
+                vibeTag.classList.add('vibe-elite');
+            } else {
+                vibeTag.innerText = 'HEAVY';
+                vibeTag.classList.add('vibe-heavy');
+            }
+
             // Badges
             const badgeContainer = document.getElementById('det-badges');
             badgeContainer.innerHTML = '';
             if (source && source.includes('Partner')) {
                 badgeContainer.innerHTML += '<span class="badge badge-partner">PRO PARTNER</span>';
+            } else if (source && source.includes('Nike')) {
+                badgeContainer.innerHTML += '<span class="badge badge-partner">NIKE PARTNER</span>';
             }
+            
             if (accessType) {
-                badgeContainer.innerHTML += `<span class="badge">${accessType.toUpperCase()}</span>`;
+                badgeContainer.innerHTML += `<span class="badge badge-access">${accessType.toUpperCase()}</span>`;
+            }
+            
+            if (fee) {
+                badgeContainer.innerHTML += `<span class="badge badge-king">FEE: ${fee}</span>`;
+                isIndoorGym = true;
+                setupMonetizationWidget(true, fee);
+            } else {
+                isIndoorGym = false;
+                setupMonetizationWidget(false);
             }
 
             showView('court-detail');
             fetchQueue(id);
         }
 
+        function setupMonetizationWidget(isGym, fee) {
+            const title = document.getElementById('mono-title');
+            const cost = document.getElementById('mono-cost');
+            const desc = document.getElementById('mono-desc');
+            const bar = document.getElementById('mono-progress');
+            const buyoutBtn = document.getElementById('mono-buyout-btn');
+            
+            if (isGym) {
+                title.innerText = "GYM SURGE SESSION";
+                cost.innerText = fee;
+                desc.innerText = "Reserve a high-demand indoor run. Guaranteed spot, certified referee.";
+                bar.style.width = "100%";
+                buyoutBtn.innerText = "Book Run";
+            } else {
+                title.innerText = "CROWDFUNDED RUN";
+                cost.innerText = `$${crowdfundAmount} / $50`;
+                desc.innerText = "Pitch in to buyout the court for a private squad run.";
+                bar.style.width = `${(crowdfundAmount / 50) * 100}%`;
+                buyoutBtn.innerText = "Buy Out $50";
+            }
+        }
+
+        function contributeFunds() {
+            if (isIndoorGym) {
+                alert("This is a private gym run. Please book the full run to reserve.");
+                return;
+            }
+            crowdfundAmount += 5;
+            if (crowdfundAmount >= 50) {
+                alert("Goal reached! Court locked in for private run.");
+                crowdfundAmount = 50;
+            }
+            setupMonetizationWidget(false);
+        }
+
+        function buyoutCourt() {
+            if (isIndoorGym) {
+                alert("Gym session booked! Check your Asphalt ID for verification.");
+            } else {
+                alert("Court bought out! This court is now private for your squad for the next 2 hours.");
+                crowdfundAmount = 50;
+                setupMonetizationWidget(false);
+            }
+        }
+
+        function setFilter(filter, el) {
+            document.querySelectorAll('.filter-pill').forEach(pill => pill.classList.remove('active'));
+            el.classList.add('active');
+            currentFilter = filter;
+            
+            // Refresh listings
+            const searchVal = document.querySelector('.search-bar').value;
+            handleSearch({ target: { value: searchVal } });
+        }
+
         async function handleSearch(e) {
             const q = e.target.value;
-            if (q.length < 2) return;
             const res = await fetch(`/referee/courts?q=${q}`);
             const data = await res.json();
             const container = document.getElementById('search-results');
-            container.innerHTML = data.courts.map(c => `
-                <div class="list-item" onclick="selectCourt('${c.id}', '${c.name.replace(/'/g, "\\'")}', '${c.location.replace(/'/g, "\\'")}', '${c.source}', '${c.access_type}')">
+            
+            // Filter results
+            let courts = data.courts;
+            if (currentFilter === 'active') {
+                // Simulate showing only runs with checkins
+                courts = courts.filter(c => c.id.includes('NYC') || c.id.includes('Brooklyn'));
+            } else if (currentFilter === 'partner') {
+                courts = courts.filter(c => c.source && (c.source.includes('Partner') || c.source.includes('Nike')));
+            } else if (currentFilter === 'fee') {
+                courts = courts.filter(c => c.fee);
+            }
+
+            if (courts.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:var(--text-dim); padding:20px; font-size:0.8rem;">No courts found matching this filter.</p>';
+                return;
+            }
+
+            container.innerHTML = courts.map(c => `
+                <div class="list-item" onclick="selectCourt('${c.id}', '${c.name.replace(/'/g, "\\'")}', '${c.location.replace(/'/g, "\\'")}', '${c.source || 'Public'}', '${c.access_type || 'Public'}', '${c.fee || ''}')">
                     <div>
-                        <div class="list-name">${c.name} ${c.source && c.source.includes('Partner') ? '✅' : ''}</div>
-                        <div class="list-sub">${c.county || 'GLOBAL'} • ${c.access_type || 'Public'}</div>
+                        ${c.source && c.source.includes('Nike') ? '<span class="badge badge-partner">Nike Run</span>' : ''}
+                        ${c.source && c.source.includes('Partner') ? '<span class="badge badge-partner">Partner</span>' : ''}
+                        ${c.fee ? '<span class="badge badge-king">Paid Gym</span>' : '<span class="badge badge-access">Public</span>'}
+                        <div class="list-name" style="margin-top: 4px;">${c.name}</div>
+                        <div class="list-sub">${c.county || 'GLOBAL'} • ${c.access_type || 'Public'} ${c.fee ? '• ' + c.fee : ''}</div>
                     </div>
-                    <div style="font-size:0.75rem; font-weight:900; color:var(--accent);">GO</div>
+                    <div style="font-size:0.75rem; font-weight:700; color:var(--accent); font-family:'Oswald';">GO</div>
                 </div>
             `).join('');
         }
@@ -468,7 +1147,7 @@
             const data = await res.json();
             const container = document.getElementById('queue-list');
             if (data.queue.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:var(--text-dim); font-size:0.8rem; margin-top:30px;">No one in queue. Court is wide open.</p>';
+                container.innerHTML = '<p style="text-align:center; color:var(--text-dim); font-size:0.8rem; margin: 30px 0;">No one in queue. Court is wide open.</p>';
                 return;
             }
             container.innerHTML = data.queue.map(t => `
@@ -492,13 +1171,13 @@
                     court_id: activeCourtId,
                     team_id: team,
                     captain_id: 'peggs',
-                    lat: 0, lon: 0
+                    lat: 40.731, lon: -74.001 // Simulated proximity to cage
                 })
             });
             fetchQueue(activeCourtId);
         }
 
-        function triggerAudit() {
+        async function triggerAudit() {
             alert("AI Vision scanning global courts... Vibe: Elite. 42 active runs detected.");
         }
 
@@ -509,28 +1188,97 @@
             container.innerHTML = data.leaderboard.map((s, idx) => `
                 <div class="list-item">
                     <div>
-                        <span style="color:var(--accent); font-weight:900; margin-right:10px;">#${idx+1}</span>
+                        <span style="color:var(--accent); font-weight:800; margin-right:10px; font-family:'Oswald';">#${idx+1}</span>
                         <span class="list-name">${s.squad_name}</span>
                     </div>
-                    <div style="font-weight:900; color:var(--accent);">${s.win_streak}W</div>
+                    <div style="font-weight:900; color:var(--accent); font-family:'Oswald';">${s.win_streak}W</div>
                 </div>
             `).join('');
         }
 
         async function fetchProfile() {
+            const res = await fetch('/referee/player/peggs');
+            const stats = await res.json();
+            
+            document.getElementById('prof-arch').innerText = stats.archetype.toUpperCase();
+            document.getElementById('prof-name').innerText = stats.name.toUpperCase();
+
+            // Fetch teammate chemistry
+            const chemRes = await fetch('/referee/player/peggs/chemistry');
+            const chemData = await chemRes.json();
             const container = document.getElementById('chem-list');
-            container.innerHTML = `
-                <div class="list-item">
-                    <div>
-                        <div class="list-name">Naiqui</div>
-                        <div style="font-size:0.6rem; color:var(--accent); font-weight:900;">SPLASH BROTHERS</div>
+            
+            if (chemData.top_chemistry && chemData.top_chemistry.length > 0) {
+                container.innerHTML = chemData.top_chemistry.map(c => `
+                    <div class="list-item">
+                        <div>
+                            <div class="list-name">${c.teammate.toUpperCase()}</div>
+                            <div style="font-size:0.6rem; color:var(--accent); font-weight:800; letter-spacing:0.5px; text-transform:uppercase;">${c.nickname || 'TEAMCHEM'}</div>
+                        </div>
+                        <div style="color:var(--biz-green); font-weight:700; font-family:'Oswald';">${c.wins_together} WINS</div>
                     </div>
-                    <div style="color:var(--biz-green); font-weight:900;">12 WINS</div>
-                </div>
-            `;
+                `).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="list-item">
+                        <div>
+                            <div class="list-name">NAIQUI</div>
+                            <div style="font-size:0.6rem; color:var(--accent); font-weight:800; letter-spacing:0.5px; text-transform:uppercase;">TWIN TELEPATHS</div>
+                        </div>
+                        <div style="color:var(--biz-green); font-weight:700; font-family:'Oswald';">14 WINS</div>
+                    </div>
+                `;
+            }
         }
 
-        // Initialize Home View
+        async function fetchStudioCommentary() {
+            try {
+                const res = await fetch(`/referee/studio-commentary${activeCourtId ? '?court_id=' + activeCourtId : ''}`);
+                const data = await res.json();
+                const container = document.getElementById('studio-comments');
+                if (!data.commentary) return;
+                
+                let currentSpeakerIdx = 0;
+                
+                function renderComment() {
+                    const comment = data.commentary[currentSpeakerIdx];
+                    const avatars = {
+                        "Ernie": "🎙️",
+                        "Kenny": "💻",
+                        "Chuck": "🍩",
+                        "Shaq": "👑"
+                    };
+                    
+                    container.innerHTML = `
+                        <div class="studio-bubble-avatar">${avatars[comment.host] || "🏀"}</div>
+                        <div class="studio-bubble-content">
+                            <div class="studio-bubble-host">${comment.host}</div>
+                            <div class="studio-bubble-text">"${comment.text}"</div>
+                        </div>
+                    `;
+                    
+                    // Highlight speaking avatar
+                    document.querySelectorAll('.avatar-pill').forEach(pill => {
+                        pill.classList.remove('speaking');
+                        if (pill.dataset.host === comment.host) {
+                            pill.classList.add('speaking');
+                        }
+                    });
+                    
+                    currentSpeakerIdx = (currentSpeakerIdx + 1) % data.commentary.length;
+                }
+                
+                renderComment();
+                // Cycle commentary every 6 seconds
+                if (window.commentaryInterval) clearInterval(window.commentaryInterval);
+                window.commentaryInterval = setInterval(renderComment, 6000);
+                
+            } catch (err) {
+                console.error("Failed to load studio commentary:", err);
+            }
+        }
+
+        // Initialize Home View on Load
         document.addEventListener('DOMContentLoaded', () => {
             showView('home');
         });

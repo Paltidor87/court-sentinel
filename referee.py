@@ -77,20 +77,20 @@ def _get_legacy_nickname(archetypes: List[str], wins: int) -> str:
     
     # Trio Logic (The Big Three)
     if count >= 3:
-        if archetypes.count("Sharpshooter") >= 2: return "The Run & Gun Trio"
-        if "Floor General" in archetypes and "Rim Protector" in archetypes: return "The Big Three"
+        if archetypes.count("Bucket Getter") >= 2: return "The Run & Gun Trio"
+        if "Point God" in archetypes and "Stretch Big" in archetypes: return "The Modern Big Three"
         return "The Showtime Trio"
 
     # Duo Logic
     if count == 2:
         a1, a2 = archetypes[0], archetypes[1]
         combinations = {
-            ("Sharpshooter", "Sharpshooter"): "Splash Brothers",
-            ("Rim Protector", "Rim Protector"): "Twin Towers",
-            ("Floor General", "Slasher"): "The Dynamic Duo",
-            ("Lockdown Defender", "Rim Protector"): "The Bad Boys",
-            ("Sharpshooter", "Rim Protector"): "Inside-Out Threat",
-            ("Slasher", "Slasher"): "Flight Brothers"
+            ("3-and-D Wing", "Bucket Getter"): "Twin Telepaths",
+            ("Stretch Big", "Stretch Big"): "Twin Towers",
+            ("Iso Scorer", "Point God"): "Pick & Roll Wizards",
+            ("3-and-D Wing", "Point God"): "Lockdown Backcourt",
+            ("Bucket Getter", "Iso Scorer"): "The Iso Brothers",
+            ("Bucket Getter", "Point God"): "The Duo"
         }
         return combinations.get((a1, a2), "The Duo" if wins < 10 else "The Legends")
     
@@ -467,3 +467,78 @@ async def audit_ghost(req: AuditRequest, db: sqlite3.Connection = Depends(get_db
         "target_team": top_team['team_id'], 
         "message": f"Verification ping sent to Captain {top_team['captain_id']}. They have 2 minutes to respond."
     }
+
+
+@router.get("/studio-commentary")
+async def get_studio_commentary(court_id: Optional[str] = None, db: sqlite3.Connection = Depends(get_db)):
+    """Generate dynamic Inside the NBA desk commentary based on court data."""
+    court_name = "West 4th St (The Cage)"
+    vibe = "Heavy Run"
+    player_count = 14
+    wait_time = "25 minutes"
+    
+    if court_id:
+        court = db.execute("SELECT name, location FROM courts WHERE id = ?", (court_id,)).fetchone()
+        if court:
+            court_name = court["name"]
+            # Fetch queue info
+            queue_rows = db.execute("SELECT count(*) as count FROM queues WHERE court_id = ? AND status = 'waiting'", (court_id,)).fetchone()
+            wait_count = queue_rows["count"] if queue_rows else 0
+            wait_time = f"{wait_count * 10} minutes"
+            playing_rows = db.execute("SELECT count(*) as count FROM queues WHERE court_id = ? AND status = 'playing'", (court_id,)).fetchone()
+            player_count = (playing_rows["count"] if playing_rows else 1) * 10
+            vibe = "Elite" if wait_count > 2 else "Chill"
+            
+    prompt = f"""
+    You are the Inside the NBA host desk crew: Ernie Johnson (E.J.), Charles Barkley (Chuck), Shaquille O'Neal (Shaq), and Kenny "The Jet" Smith.
+    Write a brief, hilarious, and high-energy 4-line transcript discussing a pickup basketball court run.
+    
+    Court details:
+    - Court Name: {court_name}
+    - Court Vibe: {vibe}
+    - Players checked in: {player_count}
+    - Wait time to play: {wait_time}
+    
+    Host personalities:
+    - Ernie: Sets the stage professionally as the anchor.
+    - Chuck: Criticizes the players/run, uses phrases like "turrible" or guarantees a blowout.
+    - Shaq: Talks about dominance, rings ("four rings, Chuck"), or calls the run "barbecue chicken."
+    - Kenny: Talks strategic spacing, running the floor, or going to the board.
+    
+    Return ONLY a JSON array of objects representing the discussion:
+    [
+      {{"host": "Ernie", "text": "..."}},
+      {{"host": "Kenny", "text": "..."}},
+      {{"host": "Chuck", "text": "..."}},
+      {{"host": "Shaq", "text": "..."}}
+    ]
+    """
+    
+    # Fallback default script if AI fails or if API key is not configured
+    fallback = [
+        {"host": "Ernie", "text": f"Welcome back to Inside the NBA. We're looking at the run over at {court_name}. Looks like a {vibe} with {player_count} players checked in."},
+        {"host": "Kenny", "text": "Look at the transition, Ernie! If you don't run the floor, you're not getting on the board. Spacing is key here!"},
+        {"host": "Chuck", "text": "Kenny, that's just turrible. I guarantee you those guys couldn't score on my grandmother. That's a guarantee!"},
+        {"host": "Shaq", "text": "Chuck, you know nothing about scoring. That run is barbecue chicken for anybody who knows how to dominate. Count the rings!"}
+    ]
+    
+    # If the API key is not configured or is the default, return fallback instantly
+    gemini_key = os.getenv("GEMINI_API_KEY", "your_key_here")
+    if gemini_key == "your_key_here":
+        return {"commentary": fallback}
+        
+    try:
+        response = client.models.generate_content(
+            model="gemini-1.5-flash-002",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.7
+            )
+        )
+        data = json.loads(response.text)
+        return {"commentary": data}
+    except Exception as e:
+        log.error("Failed to generate studio commentary: %s", e)
+        return {"commentary": fallback}
+

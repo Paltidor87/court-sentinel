@@ -968,6 +968,10 @@
                             <span class="pill-val">37</span>
                             <span class="pill-lbl">Wins</span>
                         </div>
+                        <div class="pill" style="background:rgba(0,0,0,0.3)">
+                            <span class="pill-val" id="prof-credits">35</span>
+                            <span class="pill-lbl">Credits 🪙</span>
+                        </div>
                     </div>
 
                     <!-- Dynamic Sponsor Badge on Bio Card -->
@@ -1100,6 +1104,7 @@
         }
 
         let waiverSigned = false;
+        let playerCredits = 35; // Global credits tracker
 
         function setupMonetizationWidget(isGym, fee) {
             const title = document.getElementById('mono-title');
@@ -1111,7 +1116,7 @@
             
             if (isGym) {
                 title.innerText = "GYM DAY PASS & RUN";
-                cost.innerText = fee;
+                cost.innerText = "10 Credits 🪙";
                 desc.innerHTML = `✍️ <strong>Waiver:</strong> ${waiverSigned ? 'Signed ✅' : 'Required'}<br>
                                  🎟️ <strong>Includes:</strong> Court Entry & Gym Day Pass (Self-Service Check-In)`;
                 bar.style.width = "100%";
@@ -1164,10 +1169,21 @@
                     alert("Please sign the liability waiver first before purchasing your Day Pass.");
                     return;
                 }
+                if (playerCredits < 10) {
+                    alert("Insufficient Sentinel Credits! You currently have " + playerCredits + " credits, but this run requires 10. Please purchase a top-up credit bundle.");
+                    return;
+                }
+                
+                // Deduct credits
+                playerCredits -= 10;
+                
+                // Update profile credits element if available
+                const profCreditsEl = document.getElementById('prof-credits');
+                if (profCreditsEl) profCreditsEl.innerText = playerCredits;
                 
                 const ticketCode = "CS-" + Math.floor(Math.random() * 900000 + 100000);
                 document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${ticketCode}`;
-                document.getElementById('qr-modal-code').innerText = `Code: ${ticketCode} • Day Pass Active`;
+                document.getElementById('qr-modal-code').innerText = `Code: ${ticketCode} • 10 Credits Deducted`;
                 document.getElementById('qr-modal').style.setProperty('display', 'flex', 'important');
                 
                 waiverSigned = false;
@@ -1289,6 +1305,8 @@
             
             document.getElementById('prof-arch').innerText = stats.archetype.toUpperCase();
             document.getElementById('prof-name').innerText = stats.name.toUpperCase();
+            playerCredits = stats.credits !== undefined ? stats.credits : 35;
+            document.getElementById('prof-credits').innerText = playerCredits;
 
             // Fetch teammate chemistry
             const chemRes = await fetch('/referee/player/peggs/chemistry');

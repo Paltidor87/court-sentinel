@@ -917,7 +917,7 @@
                         <span id="mono-desc">Pitch in to buyout the court for a private squad run.</span>
                     </div>
                     <div class="btn-group" style="margin-top: 10px; margin-bottom: 0;">
-                        <button class="btn btn-primary" onclick="contributeFunds()" style="background:var(--biz-green); color:#000;">Pitch in $5</button>
+                        <button class="btn btn-primary" onclick="contributeFunds()" style="background:var(--biz-green); color:#000;" id="mono-pitch-btn">Pitch in $5</button>
                         <button class="btn btn-outline" onclick="buyoutCourt()" id="mono-buyout-btn">Buy Out $50</button>
                     </div>
                 </div>
@@ -1095,31 +1095,55 @@
             fetchQueue(id);
         }
 
+        let waiverSigned = false;
+
         function setupMonetizationWidget(isGym, fee) {
             const title = document.getElementById('mono-title');
             const cost = document.getElementById('mono-cost');
             const desc = document.getElementById('mono-desc');
             const bar = document.getElementById('mono-progress');
+            const pitchBtn = document.getElementById('mono-pitch-btn');
             const buyoutBtn = document.getElementById('mono-buyout-btn');
             
             if (isGym) {
-                title.innerText = "GYM SURGE SESSION";
+                title.innerText = "GYM DAY PASS & RUN";
                 cost.innerText = fee;
-                desc.innerText = "Reserve a high-demand indoor run. Guaranteed spot, certified referee.";
+                desc.innerHTML = `✍️ <strong>Waiver:</strong> ${waiverSigned ? 'Signed ✅' : 'Required'}<br>
+                                 🎟️ <strong>Includes:</strong> Court Entry & Gym Day Pass (Self-Service Check-In)`;
                 bar.style.width = "100%";
-                buyoutBtn.innerText = "Book Run";
+                bar.style.backgroundColor = "var(--biz-green)";
+                if (waiverSigned) {
+                    pitchBtn.innerText = "Waiver Signed ✅";
+                    pitchBtn.style.background = "#222";
+                    pitchBtn.style.color = "var(--text-dim)";
+                } else {
+                    pitchBtn.innerText = "Sign Waiver";
+                    pitchBtn.style.background = "var(--nba-blue)";
+                    pitchBtn.style.color = "#fff";
+                }
+                buyoutBtn.innerText = "Get Day Pass";
             } else {
                 title.innerText = "CROWDFUNDED RUN";
                 cost.innerText = `$${crowdfundAmount} / $50`;
                 desc.innerText = "Pitch in to buyout the court for a private squad run.";
                 bar.style.width = `${(crowdfundAmount / 50) * 100}%`;
+                bar.style.backgroundColor = "var(--biz-green)";
+                pitchBtn.innerText = "Pitch in $5";
+                pitchBtn.style.background = "var(--biz-green)";
+                pitchBtn.style.color = "#000";
                 buyoutBtn.innerText = "Buy Out $50";
             }
         }
 
         function contributeFunds() {
             if (isIndoorGym) {
-                alert("This is a private gym run. Please book the full run to reserve.");
+                if (waiverSigned) {
+                    alert("Liability waiver is already signed and locked to your Asphalt ID.");
+                    return;
+                }
+                alert("Digital Liability Waiver signed successfully for this facility! Locked to Asphalt ID: peggs.");
+                waiverSigned = true;
+                setupMonetizationWidget(true, "10");
                 return;
             }
             crowdfundAmount += 5;
@@ -1132,7 +1156,13 @@
 
         function buyoutCourt() {
             if (isIndoorGym) {
-                alert("Gym session booked! Check your Asphalt ID for verification.");
+                if (!waiverSigned) {
+                    alert("Please sign the liability waiver first before purchasing your Day Pass.");
+                    return;
+                }
+                alert("Payment processed! waiver signed, day pass issued. Your digital gate pass code: CS-984-RUN. Facility fee split: 90% Gym, 10% Court Sentinel cut.");
+                waiverSigned = false;
+                showView('discover');
             } else {
                 alert("Court bought out! This court is now private for your squad for the next 2 hours.");
                 crowdfundAmount = 50;

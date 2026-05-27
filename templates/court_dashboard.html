@@ -719,6 +719,10 @@
             letter-spacing: 0.5px;
             color: #ddd;
         }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -1160,14 +1164,23 @@
                     alert("Please sign the liability waiver first before purchasing your Day Pass.");
                     return;
                 }
-                alert("Payment processed! waiver signed, day pass issued. Your digital gate pass code: CS-984-RUN. Facility fee split: 90% Gym, 10% Court Sentinel cut.");
+                
+                const ticketCode = "CS-" + Math.floor(Math.random() * 900000 + 100000);
+                document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${ticketCode}`;
+                document.getElementById('qr-modal-code').innerText = `Code: ${ticketCode} • Day Pass Active`;
+                document.getElementById('qr-modal').style.setProperty('display', 'flex', 'important');
+                
                 waiverSigned = false;
-                showView('discover');
             } else {
                 alert("Court bought out! This court is now private for your squad for the next 2 hours.");
                 crowdfundAmount = 50;
                 setupMonetizationWidget(false);
             }
+        }
+
+        function closeQRModal() {
+            document.getElementById('qr-modal').style.setProperty('display', 'none', 'important');
+            showView('discover');
         }
 
         function setFilter(filter, el) {
@@ -1357,5 +1370,23 @@
             showView('home');
         });
     </script>
+
+    <!-- QR Code Scan Modal -->
+    <div id="qr-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #111 0%, #050505 100%); border: 1px solid var(--glass-border); border-radius: 24px; padding: 30px 24px; text-align: center; width: 100%; max-width: 380px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); animation: zoomIn 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); display: flex; flex-direction: column; align-items: center;">
+            <div style="font-family: 'Oswald', sans-serif; font-size: 1.4rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Access QR Code</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 25px;">Scan this code at the gym scanner or turnstile to enter.</div>
+            
+            <div style="background: white; padding: 16px; border-radius: 16px; width: 180px; height: 180px; margin: 0 auto 25px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(255,255,255,0.05);">
+                <img id="qr-image" src="" alt="QR Code" style="width: 150px; height: 150px; display: block;">
+            </div>
+            
+            <div id="qr-modal-code" style="font-family: 'Oswald', sans-serif; font-size: 0.9rem; color: var(--biz-green); letter-spacing: 1px; margin-bottom: 25px; text-transform: uppercase;">
+                Code: CS-984-RUN • Day Pass Active
+            </div>
+            
+            <button class="btn btn-primary" onclick="closeQRModal()" style="width: 100%; background: #fff; color: #000; font-weight: 700; border-radius: 12px; padding: 14px; display: flex; align-items: center; justify-content: center;">Done</button>
+        </div>
+    </div>
 </body>
 </html>

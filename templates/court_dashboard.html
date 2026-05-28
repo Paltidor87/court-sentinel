@@ -904,8 +904,11 @@
 
             <!-- Discover View -->
             <div id="view-discover" class="view-section">
-                <div class="search-bar-container">
-                    <input type="text" class="search-bar" placeholder="Find a court or gym..." onkeyup="handleSearch(event)">
+                <div class="search-bar-container" style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <input type="text" class="search-bar" placeholder="Find a court or gym..." onkeyup="handleSearch(event)" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 12px; border-radius: 12px; color: white;">
+                    <button class="btn btn-outline" onclick="openSuggestModal()" style="border: 1px dashed var(--accent); color: var(--accent); padding: 12px 16px; font-size: 0.75rem; border-radius: 12px; white-space: nowrap; margin: 0; font-family: 'Oswald', sans-serif;">
+                        + SUGGEST
+                    </button>
                 </div>
 
                 <!-- Search Filters -->
@@ -1253,6 +1256,8 @@
                 badgeContainer.innerHTML += '<span class="badge badge-partner">PRO PARTNER</span>';
             } else if (source && source.includes('Nike')) {
                 badgeContainer.innerHTML += '<span class="badge badge-partner">NIKE PARTNER</span>';
+            } else if (source === 'User Suggestion') {
+                badgeContainer.innerHTML += '<span class="badge" style="background: var(--nba-red); color: white;">PENDING VERIFICATION</span>';
             }
             
             if (accessType) {
@@ -1389,6 +1394,7 @@
                     <div>
                         ${c.source && c.source.includes('Nike') ? '<span class="badge badge-partner">Nike Run</span>' : ''}
                         ${c.source && c.source.includes('Partner') ? '<span class="badge badge-partner">Partner</span>' : ''}
+                        ${c.accessible === 'Pending Verification' ? '<span class="badge" style="background: var(--nba-red); color: white;">Pending</span>' : ''}
                         ${c.fee ? '<span class="badge badge-king">Paid Gym</span>' : '<span class="badge badge-access">Public</span>'}
                         <div class="list-name" style="margin-top: 4px;">${c.name}</div>
                         <div class="list-sub">${c.county || 'GLOBAL'} • ${c.access_type || 'Public'} ${c.fee ? '• ' + c.fee : ''}</div>
@@ -1709,6 +1715,67 @@
             } catch (err) {
                 console.error("Failed to delete post:", err);
             }
+        function openSuggestModal() {
+            document.getElementById('suggest-court-name').value = '';
+            document.getElementById('suggest-court-location').value = '';
+            document.getElementById('suggest-court-county').value = '';
+            document.getElementById('suggest-court-access').value = 'Public';
+            document.getElementById('suggest-court-fee').value = '';
+            document.getElementById('suggest-court-num').value = '1';
+            document.getElementById('suggest-court-modal').style.setProperty('display', 'flex', 'important');
+        }
+
+        function closeSuggestModal() {
+            document.getElementById('suggest-court-modal').style.setProperty('display', 'none', 'important');
+        }
+
+        async function submitSuggestedCourt() {
+            const name = document.getElementById('suggest-court-name').value.trim();
+            const location = document.getElementById('suggest-court-location').value.trim();
+            const county = document.getElementById('suggest-court-county').value.trim();
+            const accessType = document.getElementById('suggest-court-access').value;
+            const fee = document.getElementById('suggest-court-fee').value.trim();
+            const numCourtsVal = document.getElementById('suggest-court-num').value;
+            const numCourts = parseInt(numCourtsVal, 10);
+
+            if (!name || !location) {
+                alert("Please fill in the required fields: Court Name and Location.");
+                return;
+            }
+
+            if (isNaN(numCourts) || numCourts < 1) {
+                alert("Number of courts must be at least 1.");
+                return;
+            }
+
+            try {
+                const res = await fetch('/referee/courts/suggest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        location: location,
+                        county: county || null,
+                        access_type: accessType,
+                        fee: fee || null,
+                        num_courts: numCourts
+                    })
+                });
+
+                const data = await res.json();
+                if (res.status === 200 || data.status === 'ok') {
+                    alert(data.message || "Successfully submitted court suggestion!");
+                    closeSuggestModal();
+                    // Refresh search listings
+                    const searchVal = document.querySelector('.search-bar').value;
+                    handleSearch({ target: { value: searchVal } });
+                } else {
+                    alert(data.detail || "Failed to submit suggestion.");
+                }
+            } catch (err) {
+                console.error("Error submitting court suggestion:", err);
+                alert("Network error: Failed to submit suggestion.");
+            }
         }
 
         // Initialize Home View on Load
@@ -1753,6 +1820,45 @@
             <div class="btn-group" style="width: 100%; gap: 10px; grid-template-columns: 1fr 1fr;">
                 <button class="btn btn-outline" onclick="closeCheckinModal()" style="width: 100%; border-radius: 10px; padding: 12px;">Cancel</button>
                 <button class="btn btn-primary" onclick="submitCheckin()" style="width: 100%; background: #fff; color: #000; font-weight: 700; border-radius: 10px; padding: 12px; display: flex; align-items: center; justify-content: center;">Check In</button>
+            </div>
+        </div>
+    <!-- Suggest Court Modal -->
+    <div id="suggest-court-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(15px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #111 0%, #050505 100%); border: 1px solid var(--glass-border); border-radius: 24px; padding: 30px 24px; width: 100%; max-width: 380px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); animation: zoomIn 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); display: flex; flex-direction: column;">
+            <div style="font-family: 'Oswald', sans-serif; font-size: 1.4rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; text-align: center;">Suggest Court</div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px; text-align: center;">Add a new basketball court or gym to the database.</div>
+            
+            <label style="font-family: 'Oswald', sans-serif; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px;">Court Name *</label>
+            <input type="text" id="suggest-court-name" class="search-bar" placeholder="e.g. Queens Community Center" style="margin-bottom: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 12px; border-radius: 12px; width: 100%; color: white;">
+            
+            <label style="font-family: 'Oswald', sans-serif; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px;">Address / Location *</label>
+            <input type="text" id="suggest-court-location" class="search-bar" placeholder="e.g. 45-35 30th Rd, Queens" style="margin-bottom: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 12px; border-radius: 12px; width: 100%; color: white;">
+
+            <label style="font-family: 'Oswald', sans-serif; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px;">County / Borough *</label>
+            <input type="text" id="suggest-court-county" class="search-bar" placeholder="e.g. Queens, Brooklyn, Manhattan" style="margin-bottom: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 12px; border-radius: 12px; width: 100%; color: white;">
+
+            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                <div style="flex: 1;">
+                    <label style="font-family: 'Oswald', sans-serif; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px;">Access Type *</label>
+                    <select id="suggest-court-access" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 12px; border-radius: 12px; width: 100%; color: white; font-family: 'Inter', sans-serif; font-size: 0.8rem; outline: none;">
+                        <option value="Public" style="background:#111;">Public</option>
+                        <option value="Day Pass" style="background:#111;">Day Pass</option>
+                        <option value="Membership" style="background:#111;">Membership</option>
+                        <option value="Private" style="background:#111;">Private</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-family: 'Oswald', sans-serif; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px;">Fee / Cost</label>
+                    <input type="text" id="suggest-court-fee" class="search-bar" placeholder="e.g. Free, $15/day" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 12px; border-radius: 12px; width: 100%; color: white;">
+                </div>
+            </div>
+
+            <label style="font-family: 'Oswald', sans-serif; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px;">Number of Courts</label>
+            <input type="number" id="suggest-court-num" class="search-bar" value="1" min="1" style="margin-bottom: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 12px; border-radius: 12px; width: 100%; color: white;">
+            
+            <div class="btn-group" style="width: 100%; gap: 10px; grid-template-columns: 1fr 1fr; margin: 0;">
+                <button class="btn btn-outline" onclick="closeSuggestModal()" style="width: 100%; border-radius: 10px; padding: 12px;">Cancel</button>
+                <button class="btn btn-primary" onclick="submitSuggestedCourt()" style="width: 100%; background: #fff; color: #000; font-weight: 700; border-radius: 10px; padding: 12px; display: flex; align-items: center; justify-content: center;">Submit</button>
             </div>
         </div>
     </div>

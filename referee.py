@@ -87,6 +87,14 @@ class HideChemistryRequest(BaseModel):
     player_id: str
     teammate_id: str
 
+class SuggestCourtRequest(BaseModel):
+    name: str
+    location: str
+    access_type: str  # 'Public', 'Day Pass', etc.
+    fee: Optional[str] = None
+    num_courts: int = 1
+    county: Optional[str] = None
+
 def get_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -465,7 +473,7 @@ async def search_courts(q: str = "", db: sqlite3.Connection = Depends(get_db)):
     """Search for courts by name or location."""
     term = f"%{q.strip().lower()}%"
     rows = db.execute("""
-        SELECT id, name, location, county, num_courts, accessible, access_type, fee 
+        SELECT id, name, location, county, num_courts, accessible, access_type, fee, source 
         FROM courts 
         WHERE LOWER(name) LIKE ? OR LOWER(location) LIKE ?
         LIMIT 20
@@ -760,6 +768,61 @@ async def delete_blog_post(id: int, db: sqlite3.Connection = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/courts/suggest")
+async def suggest_new_court(req: SuggestCourtRequest, db: sqlite3.Connection = Depends(get_db)):
+    """Allow players to suggest a new court addition in the neighborhood."""
+    try:
+        # Slugify the name to create a unique ID
+        name_clean = "".join(c if c.isalnum() else "_" for c in req.name.strip().replace(" ", "_"))
+        # Clean double underscores
+        while "__" in name_clean:
+            name_clean = name_clean.replace("__", "_")
+        court_id = f"SUGGEST_{name_clean.strip('_')}"
+        
+        # Check if already exists
+        exists = db.execute("SELECT id FROM courts WHERE id = ?", (court_id,)).fetchone()
+        if exists:
+            raise HTTPException(status_code=400, detail="A court suggestion with this name already exists.")
+            
+        # We set default latitude and longitude for the suggestion
+        lat = 40.7306
+        lon = -73.9352
+        
+        db.execute("""
+            INSERT INTO courts (id, name, location, lat, lon, county, source, num_courts, accessible, access_type, fee)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            court_id,
+            req.name.strip(),
+            req.location.strip(),
+            lat,
+            lon,
+            req.county.strip() if req.county else "GLOBAL",
+            "User Suggestion",
+            req.num_courts,
+            "Pending Verification",
+            req.access_type,
+            req.fee.strip() if req.fee else None
+        ))
+        
+        # Log suggestion event
+        db.execute("INSERT INTO queue_events (team_id, event_type, details) VALUES (?, 'SUGGEST_COURT', ?)", 
+                   ("SYSTEM", f"New court suggested: {req.name} at {req.location}"))
+        
+        db.commit()
+        return {
+            "status": "ok", 
+            "message": f"Successfully submitted suggestion for '{req.name}'! Pending community verification.",
+            "court_id": court_id
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 
